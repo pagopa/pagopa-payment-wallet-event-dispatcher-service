@@ -1,11 +1,9 @@
 package it.pagopa.wallet.eventdispatcher.api
 
-import it.pagopa.generated.wallets.model.ClientId
 import it.pagopa.generated.wallets.model.WalletStatusErrorPatchRequest
 import it.pagopa.wallet.eventdispatcher.configuration.WebClientConfiguration
 import it.pagopa.wallet.eventdispatcher.configuration.properties.WalletsApiConfiguration
 import it.pagopa.wallet.eventdispatcher.exceptions.WalletPatchStatusError
-import java.time.OffsetDateTime
 import java.util.*
 import okhttp3.mockwebserver.*
 import org.junit.jupiter.api.AfterAll
@@ -16,7 +14,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.HttpStatusCode
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.kotlin.test.test
 
 class WalletsApiTest {
@@ -48,38 +45,6 @@ class WalletsApiTest {
                     )
                 )
         )
-
-    @Test
-    fun `should complete successfully wallet usage update when Wallet response is success`() {
-        val walletId = UUID.randomUUID()
-        mockWebService.dispatch {
-            when (it.path) {
-                "/wallets/$walletId/usages" -> MockResponse().setResponseCode(204)
-                else -> MockResponse().setResponseCode(400)
-            }
-        }
-        walletsApi
-            .updateWalletUsage(walletId, ClientId.IO, OffsetDateTime.now())
-            .test()
-            .expectNext(Unit)
-            .verifyComplete()
-    }
-
-    @Test
-    fun `should fail when Wallet response is negative for wallet usage update`() {
-        val walletId = UUID.randomUUID()
-        mockWebService.dispatch {
-            when (it.path) {
-                "/wallets/$walletId/usages" -> MockResponse().setResponseCode(400)
-                else -> MockResponse().setResponseCode(400)
-            }
-        }
-        walletsApi
-            .updateWalletUsage(walletId, ClientId.IO, OffsetDateTime.now())
-            .test()
-            .expectError(WebClientResponseException::class.java)
-            .verify()
-    }
 
     @Test
     fun `should handle successfully wallet update status 204 response`() {

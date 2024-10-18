@@ -12,21 +12,9 @@ import org.springframework.integration.annotation.Poller
 @Configuration
 class QueueConsumerConfiguration {
     companion object {
-        const val WALLET_USAGE_CHANNEL = "walletUsageChannel"
         const val WALLET_EXPIRATION_CHANNEL = "walletExpirationChannel"
         const val WALLET_CDC_CHANNEL = "walletCdcChannel"
     }
-
-    @Bean
-    @InboundChannelAdapter(
-        channel = WALLET_USAGE_CHANNEL,
-        poller = Poller(fixedDelay = "1000", maxMessagesPerPoll = "10")
-    )
-    @EndpointId("storageQueueWalletUsageMessageSourceEndpoint")
-    fun storageQueueWalletUsageMessageSource(
-        storageQueueTemplate: StorageQueueTemplate,
-        @Value("\${azure.storage.queues.wallet.usage.name}") walletUsageQueueName: String
-    ) = StorageQueueMessageSource(walletUsageQueueName, storageQueueTemplate)
 
     @Bean
     @InboundChannelAdapter(
