@@ -1,7 +1,11 @@
 package it.pagopa.wallet.eventdispatcher.service
 
-import it.pagopa.wallet.eventdispatcher.audit.WalletAddedEvent
+import it.pagopa.wallet.eventdispatcher.common.cdc.AuditWallet
+import it.pagopa.wallet.eventdispatcher.common.cdc.AuditWalletApplication
+import it.pagopa.wallet.eventdispatcher.common.cdc.AuditWalletDetails
+import it.pagopa.wallet.eventdispatcher.common.cdc.WalletOnboardCompletedEvent
 import it.pagopa.wallet.eventdispatcher.configuration.properties.RetrySendPolicyConfig
+import java.time.Instant
 import java.util.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -22,9 +26,45 @@ class WalletCDCServiceTest {
     private val walletCDCService =
         WalletCDCService(cdcKafkaTemplate, cdcTopicName, retrySendPolicyConfig)
 
+    private val sampleApplications =
+        listOf(
+            AuditWalletApplication(
+                id = UUID.randomUUID().toString(),
+                status = "ACTIVE",
+                creationDate = Instant.now().toString(),
+                updateDate = Instant.now().toString(),
+                metadata = mapOf("key1" to "value1", "key2" to "value2")
+            )
+        )
+
+    private val sampleDetails =
+        AuditWalletDetails(type = "CARDS", cardBrand = "VISA", pspId = "psp123")
+
+    private val auditWallet =
+        AuditWallet(
+            paymentMethodId = UUID.randomUUID().toString(),
+            creationDate = Instant.now().toString(),
+            updateDate = Instant.now().toString(),
+            applications = sampleApplications,
+            details = sampleDetails,
+            status = "VALID",
+            validationOperationId = UUID.randomUUID().toString(),
+            validationOperationResult = "SUCCESS",
+            validationOperationTimestamp = Instant.now().toString(),
+            validationErrorCode = null
+        )
+
+    private val event =
+        WalletOnboardCompletedEvent(
+            id = UUID.randomUUID().toString(),
+            walletId = UUID.randomUUID().toString(),
+            timestamp = Instant.now().toString(),
+            auditWallet = auditWallet
+        )
+
     @Test
     fun `should successfully send CDC event to Kafka`() {
-        val event = WalletAddedEvent(UUID.randomUUID().toString())
+
         val sendResult = mock<SenderResult<Void>>()
         given(cdcKafkaTemplate.send(anyString(), anyString(), any()))
             .willReturn(Mono.just(sendResult))
@@ -34,7 +74,7 @@ class WalletCDCServiceTest {
 
     @Test
     fun `should log error when failing to send CDC event to Kafka`() {
-        val event = WalletAddedEvent(UUID.randomUUID().toString())
+
         given(cdcKafkaTemplate.send(anyString(), anyString(), any()))
             .willAnswer { Mono.error<RuntimeException>(RuntimeException("First attempt failed")) }
             .willAnswer { Mono.error<RuntimeException>(RuntimeException("Second attempt failed")) }
@@ -47,7 +87,7 @@ class WalletCDCServiceTest {
 
     @Test
     fun `should dispatch event from on second retry`() {
-        val event = WalletAddedEvent(UUID.randomUUID().toString())
+
         val sendResult = mock<SenderResult<Void>>()
         given(cdcKafkaTemplate.send(anyString(), anyString(), any()))
             .willAnswer { Mono.error<RuntimeException>(RuntimeException("First attempt failed")) }

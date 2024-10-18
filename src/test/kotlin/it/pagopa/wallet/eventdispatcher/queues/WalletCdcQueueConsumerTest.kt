@@ -8,6 +8,7 @@ import it.pagopa.wallet.eventdispatcher.common.cdc.*
 import it.pagopa.wallet.eventdispatcher.common.queue.CdcQueueEvent
 import it.pagopa.wallet.eventdispatcher.common.queue.TracingInfo
 import it.pagopa.wallet.eventdispatcher.configuration.CdcSerializationConfiguration
+import it.pagopa.wallet.eventdispatcher.service.WalletCDCService
 import it.pagopa.wallet.eventdispatcher.utils.Tracing
 import it.pagopa.wallet.eventdispatcher.utils.TracingKeys
 import it.pagopa.wallet.eventdispatcher.utils.TracingMock
@@ -27,9 +28,14 @@ class WalletCdcQueueConsumerTest {
     private val azureJsonSerializer =
         serializationConfiguration.cdcAzureJsonSerializer(objectMapper)
     private val tracing: Tracing = TracingMock.mock()
+    private val walletCDCService: WalletCDCService = mock()
 
     private val walletCdcQueueConsumer =
-        WalletCdcQueueConsumer(azureJsonSerializer = azureJsonSerializer, tracing = tracing)
+        WalletCdcQueueConsumer(
+            azureJsonSerializer = azureJsonSerializer,
+            tracing = tracing,
+            walletCDCService
+        )
 
     @Test
     fun `Should process wallet onboard completed event successfully`() {

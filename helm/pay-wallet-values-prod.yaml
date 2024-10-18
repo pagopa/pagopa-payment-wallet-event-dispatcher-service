@@ -88,6 +88,8 @@ microservice-chart:
     CDC_SEND_RETRY_MAX_ATTEMPTS: "1"
     CDC_SEND_RETRY_INTERVAL_IN_MS: "1000"
     WALLET_CDC_QUEUE_NAME: "pagopa-p-itn-pay-wallet-cdc-queue"
+    WALLET_CDC_QUEUE_POLLING_MAX_MESSAGE_PER_POLL: "10"
+    WALLET_CDC_QUEUE_POLLING_FIXED_DELAY_MS: "1000"
   envSecret:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
     WALLET_STORAGE_QUEUE_KEY: wallet-storage-account-key

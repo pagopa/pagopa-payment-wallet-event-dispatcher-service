@@ -5,15 +5,14 @@ import com.azure.core.util.serializer.JsonSerializerProvider
 import com.azure.core.util.serializer.TypeReference
 import com.azure.spring.messaging.AzureHeaders
 import com.azure.spring.messaging.checkpoint.Checkpointer
-import it.pagopa.wallet.eventdispatcher.common.cdc.LoggingEvent
-import it.pagopa.wallet.eventdispatcher.common.cdc.WalletApplicationsUpdatedEvent
-import it.pagopa.wallet.eventdispatcher.common.cdc.WalletDeletedEvent
-import it.pagopa.wallet.eventdispatcher.common.cdc.WalletOnboardCompletedEvent
+import it.pagopa.wallet.eventdispatcher.common.cdc.*
 import it.pagopa.wallet.eventdispatcher.common.queue.CdcQueueEvent
 import it.pagopa.wallet.eventdispatcher.configuration.QueueConsumerConfiguration
+import it.pagopa.wallet.eventdispatcher.service.WalletCDCService
 import it.pagopa.wallet.eventdispatcher.utils.Tracing
 import it.pagopa.wallet.eventdispatcher.utils.TracingKeys
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.integration.annotation.ServiceActivator
 import org.springframework.messaging.handler.annotation.Header
@@ -25,6 +24,7 @@ import reactor.core.publisher.Mono
 class WalletCdcQueueConsumer(
     @Qualifier("cdcAzureJsonSerializer") azureJsonSerializer: JsonSerializerProvider,
     private val tracing: Tracing,
+    @Autowired private val walletCDCService: WalletCDCService
 ) {
     private val azureSerializer = azureJsonSerializer.createInstance()
 
@@ -60,19 +60,18 @@ class WalletCdcQueueConsumer(
     private fun handleCdcEvent(event: LoggingEvent): Mono<Unit> {
 
         return tracing.customizeSpan(
-            if (
-                event is WalletOnboardCompletedEvent ||
-                    event is WalletDeletedEvent ||
-                    event is WalletApplicationsUpdatedEvent
-            ) {
-                Mono.just(
-                    logger.info(
-                        "Process event with id {} of type {} published on {}",
-                        event.id,
-                        event.type,
-                        event.timestamp
-                    )
-                )
+            if (event is WalletLoggingEvent) {
+                Mono.defer { walletCDCService.sendToKafka(event) }
+                    .onErrorResume {
+                        logger.error(
+                            "Error while processing event with id [{}] of type [{}] with walletId [{}] published on [{}]",
+                            event.id,
+                            event.type,
+                            event.walletId,
+                            event.timestamp
+                        )
+                        Mono.empty()
+                    }
             } else {
                 Mono.just(logger.debug("Not a valid event"))
             }

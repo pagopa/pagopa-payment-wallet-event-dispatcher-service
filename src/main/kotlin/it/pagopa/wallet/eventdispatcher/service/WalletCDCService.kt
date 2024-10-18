@@ -1,9 +1,8 @@
 package it.pagopa.wallet.eventdispatcher.service
 
-import it.pagopa.wallet.eventdispatcher.audit.LoggingEvent
+import it.pagopa.wallet.eventdispatcher.common.cdc.WalletLoggingEvent
 import it.pagopa.wallet.eventdispatcher.configuration.properties.RetrySendPolicyConfig
 import java.time.Duration
-import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
 import org.springframework.stereotype.Component
@@ -19,17 +18,36 @@ class WalletCDCService(
 
     private val log = LoggerFactory.getLogger(WalletCDCService::class.java.name)
 
-    fun sendToKafka(event: LoggingEvent): Mono<Unit> {
-        log.info("Sending CDC event to Kafka: [{}]", event.id)
+    fun sendToKafka(event: WalletLoggingEvent): Mono<Unit> {
+
+        log.info(
+            "Process event with id [{}] of type [{}] with walletId [{}] published on [{}]",
+            event.id,
+            event.type,
+            event.walletId,
+            event.timestamp
+        )
 
         return Mono.defer {
                 cdcKafkaTemplate
-                    .send(cdcTopicName, event.id, event)
+                    .send(cdcTopicName, event.walletId, event)
                     .doOnSuccess {
-                        log.info("Successfully sent CDC event to Kafka: [{}]", event.id)
+                        log.info(
+                            "Succesfully sent event with id [{}] of type [{}] with walletId [{}] published on [{}]",
+                            event.id,
+                            event.type,
+                            event.walletId,
+                            event.timestamp
+                        )
                     }
                     .doOnError {
-                        log.error("Failed to send CDC event to Kafka: [{}]", event.id, it)
+                        log.error(
+                            "Error while processing event with id [{}] of type [{}] with walletId [{}] published on [{}]",
+                            event.id,
+                            event.type,
+                            event.walletId,
+                            event.timestamp
+                        )
                     }
             }
             .retryWhen(
@@ -38,7 +56,13 @@ class WalletCDCService(
                         Duration.ofMillis(retrySendPolicyConfig.intervalInMs)
                     )
                     .doBeforeRetry {
-                        log.warn("Retrying to send CDC event to Kafka: [{}]", event.id)
+                        log.warn(
+                            "Retry send event with id [{}] of type [{}] with walletId [{}] published on [{}]",
+                            event.id,
+                            event.type,
+                            event.walletId,
+                            event.timestamp
+                        )
                     }
             )
             .thenReturn(Unit)
