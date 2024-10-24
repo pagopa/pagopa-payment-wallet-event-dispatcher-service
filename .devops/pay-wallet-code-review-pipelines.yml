@@ -61,3 +61,47 @@ stages:
               summaryFileLocation: 'build/reports/jacoco/test/jacocoTestReport.xml'
               reportDirectory: 'build/reports/jacoco/test/html'
             displayName: 'Publish Code Coverage on Azure Devops'
+
+  - stage: IntegrationTest
+    dependsOn: []
+    jobs:
+      - job: Integration_Test
+        steps:
+          - script: cp env.example .env
+            displayName: 'Set env'
+          - script: docker compose up -d
+            displayName: 'Run app with docker-compose'
+
+          - script: |
+              timeout 180 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/actuator/health/liveness)" != "200" ]]; do sleep 5; done' || exit 1
+            displayName: 'Health check pagopa-wallet-eventdispatcher'
+          - script: |
+              az storage message put \
+                --connection-string "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://localhost:10001/devstoreaccount1" \
+                --queue-name pagopa-wallet-cdc-queue \
+                --content @docker-local/example-event.json
+            displayName: 'Write message to Azurite queue'
+
+          - script: |
+              wget https://archive.apache.org/dist/kafka/2.8.0/kafka_2.13-2.8.0.tgz
+              tar -xzf kafka_2.13-2.8.0.tgz
+              export PATH=$PATH:$PWD/kafka_2.13-2.8.0/bin
+              # Verify Kafka installation
+              kafka-topics.sh --version
+              sleep 2
+              
+              message_count=$(kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list localhost:9092 --topic payment-wallet-injection-topic --time -1 --offsets 1 | awk -F ':' '{sum += $3} END {print sum}')
+              echo "Number of messages in the topic: $message_count"
+
+              eventFromKafka=$(kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic payment-wallet-injection-topic --from-beginning --timeout-ms 5000 --max-messages 1)
+
+              expectedDataEvent=$(cat docker-local/example-event-result.json)
+
+              echo "event found: $eventFromKafka"
+              if [ "$eventFromKafka" == "$expectedDataEvent" ]; then
+                echo "test passed successfully"
+              else
+                echo "fail! unexpected event"
+                exit 1   
+              fi
+            displayName: 'Validate message in Kafka topic'
