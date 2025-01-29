@@ -11,6 +11,9 @@ import it.pagopa.wallet.eventdispatcher.configuration.QueueConsumerConfiguration
 import it.pagopa.wallet.eventdispatcher.service.WalletCDCService
 import it.pagopa.wallet.eventdispatcher.utils.Tracing
 import it.pagopa.wallet.eventdispatcher.utils.TracingKeys
+import it.pagopa.wallet.eventdispatcher.warmup.annotations.WarmupFunction
+import it.pagopa.wallet.eventdispatcher.warmup.utils.DummyCheckpointer
+import it.pagopa.wallet.eventdispatcher.warmup.utils.WarmupRequests.getWalletDeletedEvent
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -36,6 +39,10 @@ class WalletCdcQueueConsumer(
     private val logger = LoggerFactory.getLogger(WalletCdcQueueConsumer::class.java)
     private val consumerSpanName = WalletCdcQueueConsumer::class.java.simpleName
 
+    fun parseEvent(payload: ByteArray): Mono<CdcQueueEvent<LoggingEvent>>? {
+        return BinaryData.fromBytes(payload).toObjectAsync(EVENT_TYPE_REFERENCE, azureSerializer)
+    }
+
     @ServiceActivator(inputChannel = INPUT_CHANNEL, outputChannel = "nullChannel")
     fun messageReceiver(
         @Payload payload: ByteArray,
@@ -43,9 +50,7 @@ class WalletCdcQueueConsumer(
     ): Mono<Unit> {
         return checkPointer
             .successWithLog() // TODO move to the end?
-            .flatMap {
-                BinaryData.fromBytes(payload).toObjectAsync(EVENT_TYPE_REFERENCE, azureSerializer)
-            }
+            .flatMap { parseEvent(payload) }
             .flatMap {
                 tracing.traceMonoWithRemoteSpan(consumerSpanName, it.tracingInfo) {
                     handleCdcEvent(it.data)
@@ -78,5 +83,11 @@ class WalletCdcQueueConsumer(
             setAttribute(TracingKeys.CDC_EVENT_ID_KEY, event.id)
             setAttribute(TracingKeys.CDC_WALLET_EVENT_TYPE_KEY, event::class.java.simpleName)
         }
+    }
+
+    @WarmupFunction
+    fun warmupService() {
+        // WalletDeletedEvent is a WalletLoggingEvent
+        messageReceiver(getWalletDeletedEvent(), DummyCheckpointer).block()
     }
 }

@@ -2,6 +2,7 @@ package it.pagopa.wallet.eventdispatcher.utils
 
 import java.time.Duration
 import org.springframework.data.redis.connection.stream.ObjectRecord
+import org.springframework.data.redis.connection.stream.ReadOffset
 import org.springframework.data.redis.connection.stream.RecordId
 import org.springframework.data.redis.core.RedisTemplate
 
@@ -67,5 +68,21 @@ abstract class RedisTemplateWrapper<V>(
 
     private fun compoundKeyWithKeyspace(key: String): String {
         return "$keyspace:$key"
+    }
+
+    fun createGroup(streamKey: String, groupName: String): String {
+        return redisTemplate.opsForStream<Any, Any>().createGroup(streamKey, groupName)
+    }
+
+    /**
+     * Create a consumer group positioned at the latest event offset for the stream with input id
+     *
+     * @param streamKey the stream key for which create the group
+     * @param groupName the group name
+     * @param readOffset the offset from which start the receiver group
+     * @return OK if operation was successful
+     */
+    fun createGroup(streamKey: String, groupName: String, readOffset: ReadOffset): String? {
+        return redisTemplate.opsForStream<Any, Any>().createGroup(streamKey, readOffset, groupName)
     }
 }

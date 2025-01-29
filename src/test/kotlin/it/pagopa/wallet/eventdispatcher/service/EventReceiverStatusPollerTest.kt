@@ -22,7 +22,9 @@ class EventReceiverStatusPollerTest {
     private val redisStreamEventControllerConfigs =
         RedisStreamEventControllerConfigs(
             streamKey = "streamKey",
-            consumerNamePrefix = "consumerName"
+            consumerNamePrefix = "consumerName",
+            consumerGroupPrefix = "consumerGroup",
+            failOnErrorCreatingConsumerGroup = false
         )
 
     private val eventReceiverStatusPoller =

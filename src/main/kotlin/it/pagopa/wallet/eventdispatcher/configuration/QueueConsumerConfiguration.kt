@@ -19,6 +19,7 @@ class QueueConsumerConfiguration {
     @Bean
     @InboundChannelAdapter(
         channel = WALLET_EXPIRATION_CHANNEL,
+        autoStartup = "false",
         poller =
             Poller(
                 fixedDelay = "\${azure.storage.queues.wallet.expiration.polling.fixedDelay}",
@@ -35,6 +36,7 @@ class QueueConsumerConfiguration {
     @Bean
     @InboundChannelAdapter(
         channel = WALLET_CDC_CHANNEL,
+        autoStartup = "false",
         poller =
             Poller(
                 fixedDelay = "\${azure.storage.queues.wallet.cdc.polling.fixedDelay}",

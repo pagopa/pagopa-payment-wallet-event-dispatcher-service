@@ -139,10 +139,32 @@ dependencyLocking { lockAllConfigurations() }
 
 sourceSets {
   main {
-    java { srcDirs("${layout.buildDirectory.get().asFile.path}/generated/src/main/java") }
+    java {
+      srcDirs(
+        "src/main/kotlin",
+        "${layout.buildDirectory.get().asFile.path}/generated/src/main/java"
+      )
+    }
     kotlin {
       srcDirs(
         "src/main/kotlin",
+        "${layout.buildDirectory.get().asFile.path}/generated/src/main/kotlin"
+      )
+    }
+    resources { srcDirs("src/resources") }
+  }
+  test {
+    java {
+      srcDirs(
+        "src/main/kotlin",
+        "src/test/kotlin",
+        "${layout.buildDirectory.get().asFile.path}/generated/src/main/java"
+      )
+    }
+    kotlin {
+      srcDirs(
+        "src/main/kotlin",
+        "src/test/kotlin",
         "${layout.buildDirectory.get().asFile.path}/generated/src/main/kotlin"
       )
     }

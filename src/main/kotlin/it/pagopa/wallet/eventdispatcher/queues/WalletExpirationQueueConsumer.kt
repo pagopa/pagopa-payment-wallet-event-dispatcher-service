@@ -16,6 +16,9 @@ import it.pagopa.wallet.eventdispatcher.domain.WalletEvent
 import it.pagopa.wallet.eventdispatcher.exceptions.WalletPatchStatusError
 import it.pagopa.wallet.eventdispatcher.utils.Tracing
 import it.pagopa.wallet.eventdispatcher.utils.TracingKeys
+import it.pagopa.wallet.eventdispatcher.warmup.annotations.WarmupFunction
+import it.pagopa.wallet.eventdispatcher.warmup.utils.DummyCheckpointer
+import it.pagopa.wallet.eventdispatcher.warmup.utils.WarmupRequests.getWalletCreatedEvent
 import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.integration.annotation.ServiceActivator
@@ -40,6 +43,10 @@ class WalletExpirationQueueConsumer(
     private val logger = LoggerFactory.getLogger(WalletExpirationQueueConsumer::class.java)
     private val consumerSpanName = WalletExpirationQueueConsumer::class.java.simpleName
 
+    fun parseEvent(payload: ByteArray): Mono<QueueEvent<WalletEvent>>? {
+        return BinaryData.fromBytes(payload).toObjectAsync(EVENT_TYPE_REFERENCE, azureSerializer)
+    }
+
     @ServiceActivator(inputChannel = INPUT_CHANNEL, outputChannel = "nullChannel")
     fun messageReceiver(
         @Payload payload: ByteArray,
@@ -47,9 +54,7 @@ class WalletExpirationQueueConsumer(
     ): Mono<Unit> {
         return checkPointer
             .successWithLog()
-            .flatMap {
-                BinaryData.fromBytes(payload).toObjectAsync(EVENT_TYPE_REFERENCE, azureSerializer)
-            }
+            .flatMap { parseEvent(payload) }
             .flatMap {
                 tracing.traceMonoWithRemoteSpan(consumerSpanName, it.tracingInfo) {
                     handleWalletCreatedEvent(it.data as WalletCreatedEvent)
@@ -118,5 +123,11 @@ class WalletExpirationQueueConsumer(
                 TracingKeys.WalletPatchTriggerKind.WALLET_EXPIRE.name
             )
         }
+    }
+
+    @WarmupFunction
+    fun warmupService() {
+        val event = getWalletCreatedEvent()
+        messageReceiver(event, DummyCheckpointer).block()
     }
 }

@@ -7,7 +7,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 class RedisStreamEventControllerConfigs(
     val streamKey: String,
     consumerNamePrefix: String,
+    consumerGroupPrefix: String,
+    val failOnErrorCreatingConsumerGroup: Boolean
 ) {
     private val uniqueConsumerId = UUID.randomUUID().toString()
     val consumerName = "$consumerNamePrefix-$uniqueConsumerId"
+    val consumerGroup = "$consumerGroupPrefix-$uniqueConsumerId"
 }

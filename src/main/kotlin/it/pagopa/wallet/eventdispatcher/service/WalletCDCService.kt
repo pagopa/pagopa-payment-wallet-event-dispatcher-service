@@ -18,13 +18,15 @@ class WalletCDCService(
 
     private val log = LoggerFactory.getLogger(WalletCDCService::class.java.name)
 
+    private val nullWallet = "00000000-0000-0000-0000-000000000000"
+
     fun sendToKafka(event: WalletLoggingEvent): Mono<Unit> {
         return Mono.defer {
                 cdcKafkaTemplate
                     .send(cdcTopicName, event.walletId, event)
                     .doOnSuccess {
                         log.info(
-                            "Succesfully sent event with id [{}] of type [{}] with walletId [{}] published on [{}]",
+                            "Successfully sent event with id [{}] of type [{}] with walletId [{}] published on [{}]",
                             event.id,
                             event.type,
                             event.walletId,
@@ -41,6 +43,15 @@ class WalletCDCService(
                             it.message
                         )
                     }
+            }
+            .flatMap { result ->
+                if (event.walletId == nullWallet) {
+                    // If the walletId is the null ID we're in the warmup phase, and we can return
+                    // immediately with Unit
+                    Mono.just(Unit)
+                } else {
+                    Mono.just(result)
+                }
             }
             .retryWhen(
                 Retry.fixedDelay(

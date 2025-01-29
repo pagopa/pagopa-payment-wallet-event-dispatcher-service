@@ -1,5 +1,6 @@
 package it.pagopa.wallet.eventdispatcher.service
 
+import it.pagopa.wallet.eventdispatcher.configuration.redis.stream.RedisStreamMessageSource
 import it.pagopa.wallet.eventdispatcher.repositories.redis.bean.ReceiverStatus
 import it.pagopa.wallet.eventdispatcher.repositories.redis.bean.Status
 import org.springframework.beans.factory.annotation.Autowired
@@ -64,5 +65,17 @@ class InboundChannelAdapterLifecycleHandlerService(
 
     /** Retrieve all InboundChannelAdapter on which perform commands */
     fun findInboundChannelAdapterBeans() =
-        applicationContext.getBeansWithAnnotation(InboundChannelAdapter::class.java).keys
+        applicationContext
+            .getBeansWithAnnotation(InboundChannelAdapter::class.java)
+            .filterNot { it.value is RedisStreamMessageSource }
+            .keys
+
+    fun invokeCommandForRedisStreamMessageSource(command: String) {
+        val controllerBusMessage =
+            MessageBuilder.createMessage(
+                "@eventDispatcherReceiverCommandChannelEndpoint.$command()",
+                MessageHeaders(mapOf())
+            )
+        controlBusInput.send(controllerBusMessage)
+    }
 }
