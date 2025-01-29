@@ -63,7 +63,6 @@ class WalletCdcQueueConsumer(
     }
 
     private fun handleCdcEvent(event: LoggingEvent): Mono<Unit> {
-
         return tracing.customizeSpan(
             if (event is WalletLoggingEvent) {
                 walletCDCService.sendToKafka(event).onErrorResume {

@@ -37,7 +37,7 @@ object WarmupRequests {
 
     // for WalletLoggingEvent subtype
     fun getWalletDeletedEvent(): ByteArray {
-        val event = EventsUtil.getWalletDeleteLoggingEvent()
+        val event = EventsUtil.getWarmupLoggingEvent()
         return traceAndSerializeCdcEvent(event)
     }
 

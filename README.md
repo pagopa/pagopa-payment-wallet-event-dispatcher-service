@@ -81,9 +81,6 @@ If you want to customize the application environment, reference this table:
 | REDIS_PASSWORD                                       | Redis port                                                                                 | string  |                         |
 | REDIS_PORT                                           | Redis password                                                                             | number  |                         |
 | REDIS_SSL_ENABLED                                    | Boolean value indicating if SSL is enabled for connection to redis                         | boolean |                         |
-| REDIS_STREAM_EVENT_CONTROLLER_STREAM_KEY             | Redis stream streaming key where event receiver controller commands will be write/read     | string  |                         |
-| REDIS_STREAM_EVENT_CONTROLLER_CONSUMER_GROUP_PREFIX  | Redis event receiver controller commands stream consumer group                             | string  |                         |
-| REDIS_STREAM_EVENT_CONTROLLER_CONSUMER_NAME_PREFIX   | Redis event receiver controller commands stream consumer name                              | string  |                         |
 
 ### Run docker container
 

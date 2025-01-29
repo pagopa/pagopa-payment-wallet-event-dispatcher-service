@@ -1,5 +1,7 @@
 package it.pagopa.wallet.eventdispatcher.common.cdc
 
+import java.time.OffsetDateTime
+
 open class LoggingEvent(
     open val id: String,
     open val timestamp: String,
@@ -35,3 +37,10 @@ data class WalletOnboardCompletedEvent(
     override val walletId: String,
     val auditWallet: AuditWallet
 ) : WalletLoggingEvent(walletId, id, timestamp)
+
+class WarmupLoggingEvent :
+    LoggingEvent(
+        id = "00000000-0000-0000-0000-000000000000",
+        timestamp = OffsetDateTime.now().toString(),
+        type = WarmupLoggingEvent::class.java.simpleName
+    )
