@@ -31,9 +31,7 @@ class EventReceiverServiceTest {
     private val redisStreamConf =
         RedisStreamEventControllerConfigs(
             streamKey = "streamKey",
-            consumerNamePrefix = "consumerNamePrefix",
-            consumerGroupPrefix = "consumerGroupPrefix",
-            failOnErrorCreatingConsumerGroup = false
+            consumerNamePrefix = "consumerNamePrefix"
         )
 
     private val eventReceiverService =

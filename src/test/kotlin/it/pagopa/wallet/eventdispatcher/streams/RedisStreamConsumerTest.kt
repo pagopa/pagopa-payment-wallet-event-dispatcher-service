@@ -5,14 +5,23 @@ import it.pagopa.generated.paymentwallet.eventdispatcher.server.model.Deployment
 import it.pagopa.wallet.eventdispatcher.configuration.properties.RedisStreamEventControllerConfigs
 import it.pagopa.wallet.eventdispatcher.service.InboundChannelAdapterLifecycleHandlerService
 import it.pagopa.wallet.eventdispatcher.streams.commands.EventDispatcherReceiverCommand
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Stream
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
-import org.springframework.data.redis.connection.stream.*
+import org.springframework.boot.SpringApplication
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.data.redis.connection.stream.ObjectRecord
+import org.springframework.data.redis.connection.stream.ReadOffset
+import org.springframework.data.redis.connection.stream.RecordId
+import org.springframework.data.redis.connection.stream.StreamOffset
+import org.springframework.data.redis.hash.Jackson2HashMapper
 import org.springframework.data.redis.stream.StreamReceiver
+import reactor.core.publisher.Flux
+import reactor.test.StepVerifier
 
 class RedisStreamConsumerTest {
     private val inboundChannelAdapterLifecycleHandlerService:
@@ -25,9 +34,7 @@ class RedisStreamConsumerTest {
     private val redisStreamConf =
         RedisStreamEventControllerConfigs(
             streamKey = "streamKey",
-            consumerNamePrefix = "consumerNamePrefix",
-            consumerGroupPrefix = "consumerGroupPrefix",
-            failOnErrorCreatingConsumerGroup = false
+            consumerNamePrefix = "consumerNamePrefix"
         )
     private val redisStreamConsumer =
         RedisStreamConsumer(
@@ -37,10 +44,6 @@ class RedisStreamConsumerTest {
             inboundChannelAdapterLifecycleHandlerService =
                 inboundChannelAdapterLifecycleHandlerService
         )
-
-    private val streamKey = redisStreamConf.streamKey
-    private val consumerGroup = redisStreamConf.consumerGroup
-    private val consumerName = redisStreamConf.consumerName
 
     companion object {
         private val objectMapper = ObjectMapper()
@@ -104,5 +107,79 @@ class RedisStreamConsumerTest {
         // verifications
         verify(inboundChannelAdapterLifecycleHandlerService, times(0))
             .invokeCommandForAllEndpoints(any())
+    }
+
+    @Test
+    fun `Should receive and parse event from redis stream`() {
+        // pre-requisites
+        val expectedCommandSend = "start"
+        val serializedEvent =
+            java.util.LinkedHashMap(
+                Jackson2HashMapper(objectMapper, true)
+                    .toHash(
+                        EventDispatcherReceiverCommand(
+                            receiverCommand = EventDispatcherReceiverCommand.ReceiverCommand.START,
+                            version = DeploymentVersionDto.PROD
+                        )
+                    )
+            ) as LinkedHashMap<*, *>
+        val receivedEvent = ObjectRecord.create(redisStreamConf.streamKey, serializedEvent)
+        given(redisStreamReceiver.receive(any())).willReturn(Flux.just(receivedEvent))
+        doNothing()
+            .`when`(inboundChannelAdapterLifecycleHandlerService)
+            .invokeCommandForAllEndpoints(any())
+        // test
+        redisStreamConsumer.onApplicationEvent(
+            ApplicationReadyEvent(SpringApplication(), null, null, null)
+        )
+        // verifications
+        verify(redisStreamReceiver, timeout(5000).times(1))
+            .receive(
+                StreamOffset.create(redisStreamConf.streamKey, ReadOffset.from(RecordId.of(0, 0)))
+            )
+        verify(inboundChannelAdapterLifecycleHandlerService, timeout(5000).times(1))
+            .invokeCommandForAllEndpoints(expectedCommandSend)
+    }
+
+    @Test
+    fun `Should recover from errors receiving events`() {
+        // pre-requisites
+        val serializedEvent =
+            java.util.LinkedHashMap(
+                Jackson2HashMapper(objectMapper, true)
+                    .toHash(
+                        EventDispatcherReceiverCommand(
+                            receiverCommand = EventDispatcherReceiverCommand.ReceiverCommand.START,
+                            version = DeploymentVersionDto.PROD
+                        )
+                    )
+            ) as LinkedHashMap<*, *>
+        val receivedEvent = ObjectRecord.create(redisStreamConf.streamKey, serializedEvent)
+        val redisConnectionErrors = 2
+        val atomicInteger = AtomicInteger(0)
+        given(redisStreamReceiver.receive(any())).willAnswer {
+            val currentAttempt = atomicInteger.addAndGet(1)
+            val mockFailure = currentAttempt <= redisConnectionErrors
+            println(
+                "Reconnection attempt: [$currentAttempt], total redis connection errors:[$redisConnectionErrors], mockFailure -> $mockFailure"
+            )
+            if (mockFailure) {
+                Flux.error(RuntimeException("Redis connection error"))
+            } else {
+                Flux.just(receivedEvent)
+            }
+        }
+        doNothing()
+            .`when`(inboundChannelAdapterLifecycleHandlerService)
+            .invokeCommandForAllEndpoints(any())
+        // test
+        StepVerifier.create(redisStreamConsumer.eventStreamPipelineWithRetry())
+            .expectNext(receivedEvent)
+            .verifyComplete()
+        // verifications
+        verify(redisStreamReceiver, times(redisConnectionErrors + 1))
+            .receive(
+                StreamOffset.create(redisStreamConf.streamKey, ReadOffset.from(RecordId.of(0, 0)))
+            )
     }
 }
