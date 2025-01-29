@@ -13,7 +13,7 @@ import it.pagopa.wallet.eventdispatcher.utils.Tracing
 import it.pagopa.wallet.eventdispatcher.utils.TracingKeys
 import it.pagopa.wallet.eventdispatcher.warmup.annotations.WarmupFunction
 import it.pagopa.wallet.eventdispatcher.warmup.utils.DummyCheckpointer
-import it.pagopa.wallet.eventdispatcher.warmup.utils.WarmupRequests.getWalletDeletedEvent
+import it.pagopa.wallet.eventdispatcher.warmup.utils.WarmupRequests.getWarmupLoggingEvent
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -39,7 +39,7 @@ class WalletCdcQueueConsumer(
     private val logger = LoggerFactory.getLogger(WalletCdcQueueConsumer::class.java)
     private val consumerSpanName = WalletCdcQueueConsumer::class.java.simpleName
 
-    fun parseEvent(payload: ByteArray): Mono<CdcQueueEvent<LoggingEvent>>? {
+    fun parseEvent(payload: ByteArray): Mono<CdcQueueEvent<LoggingEvent>> {
         return BinaryData.fromBytes(payload).toObjectAsync(EVENT_TYPE_REFERENCE, azureSerializer)
     }
 
@@ -87,6 +87,6 @@ class WalletCdcQueueConsumer(
     @WarmupFunction
     fun warmupService() {
         // WalletDeletedEvent is a WalletLoggingEvent
-        messageReceiver(getWalletDeletedEvent(), DummyCheckpointer).block()
+        messageReceiver(getWarmupLoggingEvent(), DummyCheckpointer).block()
     }
 }

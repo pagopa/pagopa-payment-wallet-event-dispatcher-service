@@ -23,7 +23,7 @@ class ServicesWarmup(
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
     override fun onApplicationEvent(event: ContextRefreshedEvent) {
-        val eventReceiverServices =
+        val servicesToWarmUp =
             event.applicationContext
                 .getBeansWithAnnotation(Service::class.java)
                 .map { it.value }
@@ -32,10 +32,10 @@ class ServicesWarmup(
                         it.hasAnnotation<WarmupFunction>()
                     }
                 }
-        logger.info("Found services: [{}]", eventReceiverServices.size)
+        logger.info("Found services: [{}]", servicesToWarmUp.size)
 
         try {
-            eventReceiverServices.forEach(this::warmUpService)
+            servicesToWarmUp.forEach(this::warmUpService)
         } catch (e: Exception) {
             logger.error("Exception during service warm-up", e)
         } finally {

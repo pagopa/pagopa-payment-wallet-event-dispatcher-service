@@ -50,7 +50,7 @@ class WarmupRequestsTest {
                 walletCDCService = mock()
             )
 
-        val payload = WarmupRequests.getWalletDeletedEvent()
+        val payload = WarmupRequests.getWarmupLoggingEvent()
         val result = walletCdcQueueConsumer.parseEvent(payload)
 
         StepVerifier.create(result).assertNext { event ->

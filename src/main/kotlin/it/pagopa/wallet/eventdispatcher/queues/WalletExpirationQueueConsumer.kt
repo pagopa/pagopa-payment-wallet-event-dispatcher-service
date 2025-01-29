@@ -43,7 +43,7 @@ class WalletExpirationQueueConsumer(
     private val logger = LoggerFactory.getLogger(WalletExpirationQueueConsumer::class.java)
     private val consumerSpanName = WalletExpirationQueueConsumer::class.java.simpleName
 
-    fun parseEvent(payload: ByteArray): Mono<QueueEvent<WalletEvent>>? {
+    fun parseEvent(payload: ByteArray): Mono<QueueEvent<WalletEvent>> {
         return BinaryData.fromBytes(payload).toObjectAsync(EVENT_TYPE_REFERENCE, azureSerializer)
     }
 
