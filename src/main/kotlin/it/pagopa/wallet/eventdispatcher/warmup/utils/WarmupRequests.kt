@@ -9,8 +9,8 @@ import it.pagopa.wallet.eventdispatcher.common.queue.TracingInfo
 import it.pagopa.wallet.eventdispatcher.configuration.CdcSerializationConfiguration
 import it.pagopa.wallet.eventdispatcher.configuration.SerializationConfiguration
 import it.pagopa.wallet.eventdispatcher.domain.WalletEvent
-import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
+import reactor.core.publisher.Mono
 
 object DummyCheckpointer : Checkpointer {
     override fun success(): Mono<Void> = Mono.empty()
