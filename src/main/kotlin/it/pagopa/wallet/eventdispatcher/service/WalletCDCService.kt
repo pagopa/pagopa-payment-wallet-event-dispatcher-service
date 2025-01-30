@@ -24,7 +24,7 @@ class WalletCDCService(
                     .send(cdcTopicName, event.walletId, event)
                     .doOnSuccess {
                         log.info(
-                            "Succesfully sent event with id [{}] of type [{}] with walletId [{}] published on [{}]",
+                            "Successfully sent event with id [{}] of type [{}] with walletId [{}] published on [{}]",
                             event.id,
                             event.type,
                             event.walletId,
