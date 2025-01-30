@@ -2,8 +2,8 @@ apiVersion: v2
 name: pagopa-payment-wallet-event-dispatcher-service
 description: Microservice that processes asynchronous workflows involving wallets inside the PagoPA platform.
 type: application
-version: 0.10.1
-appVersion: 0.9.1
+version: 0.11.0
+appVersion: 0.10.0
 dependencies:
   - name: microservice-chart
     version: 2.8.0

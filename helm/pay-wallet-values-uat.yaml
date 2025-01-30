@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: "pagopa-pay-wallet-event-dispatcher-microservice"
   image:
     repository: pagopauitncoreacr.azurecr.io/pagopapaymentwalleteventdispatcherservice
-    tag: "0.9.1"
+    tag: "0.10.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
