@@ -1,13 +1,14 @@
 package it.pagopa.wallet.eventdispatcher.warmup.utils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import it.pagopa.wallet.eventdispatcher.common.cdc.WalletDeletedEvent
+import it.pagopa.wallet.eventdispatcher.common.cdc.WarmupLoggingEvent
 import it.pagopa.wallet.eventdispatcher.configuration.CdcSerializationConfiguration
 import it.pagopa.wallet.eventdispatcher.configuration.SerializationConfiguration
 import it.pagopa.wallet.eventdispatcher.domain.WalletCreatedEvent
 import it.pagopa.wallet.eventdispatcher.queues.WalletCdcQueueConsumer
 import it.pagopa.wallet.eventdispatcher.queues.WalletExpirationQueueConsumer
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.springframework.test.context.TestPropertySource
@@ -31,9 +32,9 @@ class WarmupRequestsTest {
         val payload = WarmupRequests.getWalletCreatedEvent()
         val result = walletExpirationQueueConsumer.parseEvent(payload)
 
-        StepVerifier.create(result).assertNext { event ->
-            assertEquals(WalletCreatedEvent::class.java, event::class.java)
-        }
+        StepVerifier.create(result)
+            .assertNext { queueEvent -> assertTrue(queueEvent.data is WalletCreatedEvent) }
+            .verifyComplete()
     }
 
     @Test
@@ -53,8 +54,10 @@ class WarmupRequestsTest {
         val payload = WarmupRequests.getWarmupLoggingEvent()
         val result = walletCdcQueueConsumer.parseEvent(payload)
 
-        StepVerifier.create(result).assertNext { event ->
-            assertEquals(WalletDeletedEvent::class.java, event::class.java)
-        }
+        StepVerifier.create(result)
+            .assertNext { queueEvent ->
+                assertEquals(WarmupLoggingEvent::class.java.simpleName, queueEvent.data.type)
+            }
+            .verifyComplete()
     }
 }

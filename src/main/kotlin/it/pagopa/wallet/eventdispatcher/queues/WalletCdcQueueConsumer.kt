@@ -86,7 +86,6 @@ class WalletCdcQueueConsumer(
 
     @WarmupFunction
     fun warmupService() {
-        // WalletDeletedEvent is a WalletLoggingEvent
         messageReceiver(getWarmupLoggingEvent(), DummyCheckpointer).block()
     }
 }

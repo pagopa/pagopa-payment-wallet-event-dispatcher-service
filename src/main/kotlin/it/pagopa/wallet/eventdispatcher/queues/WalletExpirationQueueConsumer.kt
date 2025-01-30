@@ -127,7 +127,6 @@ class WalletExpirationQueueConsumer(
 
     @WarmupFunction
     fun warmupService() {
-        val event = getWalletCreatedEvent()
-        messageReceiver(event, DummyCheckpointer).block()
+        messageReceiver(getWalletCreatedEvent(), DummyCheckpointer).block()
     }
 }
