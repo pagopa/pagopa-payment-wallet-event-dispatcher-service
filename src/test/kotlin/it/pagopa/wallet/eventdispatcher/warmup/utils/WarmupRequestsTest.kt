@@ -37,7 +37,7 @@ class WarmupRequestsTest {
     }
 
     @Test
-    fun `Should handle WalletDeletedEvent`() {
+    fun `Should handle WarmupLoggingEvent`() {
 
         val serializationConfiguration = CdcSerializationConfiguration()
         val objectMapper: ObjectMapper = serializationConfiguration.cdcObjectMapperBuilder().build()
