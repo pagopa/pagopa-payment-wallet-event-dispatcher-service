@@ -2,6 +2,22 @@ microservice-chart:
   namespace: "pay-wallet"
   nameOverride: ""
   fullnameOverride: "pagopa-pay-wallet-event-dispatcher-microservice"
+  canaryDelivery:
+    create: false
+    ingress:
+      bluegreen: false
+      #set canary deployment with traffic balancing see https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md#canary for more info
+      header: true
+      headerName: deployment
+      headerValue: blue
+      weightPercent: 10
+    image:
+      repository: pagopauitncoreacr.azurecr.io/pagopapaymentwalleteventdispatcherservice
+      tag: "latest"
+    envConfig:
+      OTEL_SERVICE_NAME: "pagopa-payment-wallet-event-dispatcher-service-blue"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-payment-wallet-event-dispatcher-service-blue,deployment.environment=uat"
+    envSecret: { }
   image:
     repository: pagopauitncoreacr.azurecr.io/pagopapaymentwalleteventdispatcherservice
     tag: "0.10.0"
@@ -34,9 +50,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
-    name: ""
-  podAnnotations: {}
+    annotations: { }
+    name: "pay-wallet-workload-identity"
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -103,27 +119,7 @@ microservice-chart:
   keyvault:
     name: "pagopa-u-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: {}
-  canaryDelivery:
-    create: false
-    ingress:
-      create: false
-      canary:
-        type: bluegreen
-    service:
-      create: true
-    deployment:
-      create: true
-      image:
-        repository: pagopauitncoreacr.azurecr.io/pagopapaymentwalleteventdispatcherservice
-        tag: "latest"
-        pullPolicy: Always
-      envConfig:
-        OTEL_SERVICE_NAME: "pagopa-payment-wallet-event-dispatcher-service-blue"
-        WALLET_USAGE_QUEUE_NAME: "pagopa-u-itn-pay-wallet-usage-update-queue-b"
-        WALLET_EXPIRATION_QUEUE_NAME: "pagopa-u-itn-pay-wallet-expiration-queue-b"
-        WALLET_SERVICE_URI: "http://beta-pagopa-pay-wallet-microservice.pay-wallet.svc:8080"
-      envSecret: {}
+  nodeSelector: { }
   tolerations:
     - effect: "NoSchedule"
       key: "paymentWalletOnly"
@@ -144,6 +140,8 @@ microservice-chart:
           podAffinityTerm:
             labelSelector:
               matchLabels:
-                aadpodidbinding: pay-wallet-pod-identity
-            namespaces: ["pay-wallet"]
+                app.kubernetes.io/instance: pagopapaymentwalleteventdispatcherservice
+            namespaces: [ "pay-wallet" ]
             topologyKey: topology.kubernetes.io/zone
+  azure:
+    workloadIdentityClientId: 928bc159-85e9-4f09-ba08-1e71851166f1
