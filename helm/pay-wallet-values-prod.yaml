@@ -2,6 +2,22 @@ microservice-chart:
   namespace: "pay-wallet"
   nameOverride: ""
   fullnameOverride: "pagopa-pay-wallet-event-dispatcher-microservice"
+  canaryDelivery:
+    create: false
+    ingress:
+      bluegreen: false
+      #set canary deployment with traffic balancing see https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md#canary for more info
+      header: true
+      headerName: deployment
+      headerValue: blue
+      weightPercent: 10
+    image:
+      repository: pagopapitncoreacr.azurecr.io/pagopapaymentwalleteventdispatcherservice
+      tag: "latest"
+    envConfig:
+      OTEL_SERVICE_NAME: "pagopa-payment-wallet-event-dispatcher-service-blue"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-payment-wallet-event-dispatcher-service-blue,deployment.environment=prod"
+    envSecret: { }
   image:
     repository: pagopapitncoreacr.azurecr.io/pagopapaymentwalleteventdispatcherservice
     tag: "0.10.0"
@@ -35,9 +51,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
-    name: ""
-  podAnnotations: {}
+    annotations: { }
+    name: "pay-wallet-workload-identity"
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -115,23 +131,7 @@ microservice-chart:
   keyvault:
     name: "pagopa-p-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: {}
-  canaryDelivery:
-    create: false
-    ingress:
-      create: true
-      canary:
-        type: bluegreen
-    service:
-      create: true
-    deployment:
-      create: true
-      image:
-        repository: pagopapitncoreacr.azurecr.io/pagopawalleteventdispatcher
-        tag: "latest"
-        pullPolicy: Always
-      envConfig: {}
-      envSecret: {}
+  nodeSelector: { }
   tolerations:
     - effect: "NoSchedule"
       key: "paymentWalletOnly"
@@ -152,6 +152,8 @@ microservice-chart:
           podAffinityTerm:
             labelSelector:
               matchLabels:
-                aadpodidbinding: pay-wallet-pod-identity
-            namespaces: ["pay-wallet"]
+                app.kubernetes.io/instance: pagopapaymentwalleteventdispatcherservice
+            namespaces: [ "pay-wallet" ]
             topologyKey: topology.kubernetes.io/zone
+  azure:
+    workloadIdentityClientId: 48a74dad-26f3-4916-ba45-ddda27d950b1
