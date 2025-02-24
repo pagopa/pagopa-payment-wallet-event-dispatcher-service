@@ -17,10 +17,10 @@ microservice-chart:
     envConfig:
       OTEL_SERVICE_NAME: "pagopa-payment-wallet-event-dispatcher-service-blue"
       OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-payment-wallet-event-dispatcher-service-blue,deployment.environment=uat"
-    envSecret: { }
+    envSecret: {}
   image:
     repository: pagopauitncoreacr.azurecr.io/pagopapaymentwalleteventdispatcherservice
-    tag: "0.10.0"
+    tag: "0.11.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -50,9 +50,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: { }
+    annotations: {}
     name: "pay-wallet-workload-identity"
-  podAnnotations: { }
+  podAnnotations: {}
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -119,7 +119,7 @@ microservice-chart:
   keyvault:
     name: "pagopa-u-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: { }
+  nodeSelector: {}
   tolerations:
     - effect: "NoSchedule"
       key: "paymentWalletOnly"
@@ -141,7 +141,7 @@ microservice-chart:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/instance: pagopapaymentwalleteventdispatcherservice
-            namespaces: [ "pay-wallet" ]
+            namespaces: ["pay-wallet"]
             topologyKey: topology.kubernetes.io/zone
   azure:
     workloadIdentityClientId: 928bc159-85e9-4f09-ba08-1e71851166f1
