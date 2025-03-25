@@ -80,7 +80,7 @@ If you want to customize the application environment, reference this table:
 | REDIS_HOST                                           | Redis hostname                                                                             | string  |                         |
 | REDIS_PASSWORD                                       | Redis port                                                                                 | string  |                         |
 | REDIS_PORT                                           | Redis password                                                                             | number  |                         |
-| REDIS_SSL_ENABLED                                    | Boolean value indicating if SSL is enabled for connection to redis                         | boolean |                         |
+| REDIS_SSL_ENABLED                                    | Boolean value indicating if SSL is enabled for connection to redis memory                  | boolean |                         |
 
 ### Run docker container
 
