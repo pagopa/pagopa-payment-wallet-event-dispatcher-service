@@ -19,7 +19,7 @@ services:
       - pagopa-wallet-net
 
   storage:
-    image: mcr.microsoft.com/azure-storage/azurite:3.31.0
+    image: mcr.microsoft.com/azure-storage/azurite:3.31.0@sha256:d449d953a1c5bd1e26c800744a65c451e88f3387b696e02e3e2e79a995c3105b
     container_name: azurite
     ports:
       - "10000:10000"
@@ -44,7 +44,7 @@ services:
       - pagopa-wallet-net
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:6.1.1
+    image: confluentinc/cp-zookeeper:6.1.1@sha256:a7c0a20dce46a705300cd464e511e9c70ac55ec7e62c024867470a19ce210563
     ports:
       - "2181:2181"
     environment:
@@ -53,7 +53,7 @@ services:
       - pagopa-wallet-net
 
   kafka:
-    image: confluentinc/cp-kafka:6.1.1
+    image: confluentinc/cp-kafka:6.1.1@sha256:537c303f182ff6ba665f324520105c44970c97d7ef94b306709a5d68b8c1aed7
     depends_on:
       - zookeeper
     extra_hosts:
@@ -73,7 +73,7 @@ services:
       - pagopa-wallet-net
 
   init-kafka:
-    image: confluentinc/cp-kafka:6.1.1
+    image: confluentinc/cp-kafka:6.1.1@sha256:537c303f182ff6ba665f324520105c44970c97d7ef94b306709a5d68b8c1aed7
     depends_on:
       - kafka
     entrypoint: [ '/bin/sh', '-c' ]
@@ -91,7 +91,7 @@ services:
       - pagopa-wallet-net
 
   kafka-ui:
-    image: provectuslabs/kafka-ui
+    image: provectuslabs/kafka-ui@sha256:8f2ff02d64b0a7a2b71b6b3b3148b85f66d00ec20ad40c30bdcd415d46d31818
     container_name: kafka-ui
     ports:
       - "8081:8080"
