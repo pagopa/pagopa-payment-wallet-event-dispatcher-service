@@ -41,7 +41,8 @@ class WalletsApiTest {
                     WalletsApiConfiguration(
                         uri = "http://localhost:8888",
                         readTimeout = 1000,
-                        connectionTimeout = 1000
+                        connectionTimeout = 1000,
+                        apiKey = "test-api-key"
                     )
                 )
         )
@@ -50,6 +51,7 @@ class WalletsApiTest {
     fun `should handle successfully wallet update status 204 response`() {
         val walletId = UUID.randomUUID()
         mockWebService.dispatch {
+            assertEquals("test-api-key", it.getHeader("x-api-key"))
             when (it.path) {
                 "/wallets/$walletId" -> MockResponse().setResponseCode(204)
                 else -> MockResponse().setResponseCode(400)
@@ -70,7 +72,10 @@ class WalletsApiTest {
     fun `should handle http error code while updating wallet status`(httpErrorStatusCode: Int) {
         val walletId = UUID.randomUUID()
         val walletUpdateStatus = "ERROR"
-        mockWebService.dispatch { MockResponse().setResponseCode(httpErrorStatusCode) }
+        mockWebService.dispatch {
+            assertEquals("test-api-key", it.getHeader("x-api-key"))
+            MockResponse().setResponseCode(httpErrorStatusCode)
+        }
         walletsApi
             .updateWalletStatus(
                 walletId = walletId,
@@ -97,7 +102,10 @@ class WalletsApiTest {
     fun `should handle timeout patching wallet status`() {
         val walletId = UUID.randomUUID()
         val walletUpdateStatus = "ERROR"
-        mockWebService.dispatch { MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE) }
+        mockWebService.dispatch {
+            assertEquals("test-api-key", it.getHeader("x-api-key"))
+            MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE)
+        }
         walletsApi
             .updateWalletStatus(
                 walletId = walletId,

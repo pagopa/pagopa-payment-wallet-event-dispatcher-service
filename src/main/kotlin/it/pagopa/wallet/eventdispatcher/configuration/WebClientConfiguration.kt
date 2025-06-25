@@ -9,6 +9,9 @@ import java.util.concurrent.TimeUnit
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import org.springframework.web.reactive.function.client.ClientRequest
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction
+import reactor.core.publisher.Mono
 import reactor.netty.Connection
 import reactor.netty.http.client.HttpClient
 
@@ -31,10 +34,19 @@ class WebClientConfiguration {
                         )
                     )
                 }
+        val apiKeyFilter =
+            ExchangeFilterFunction.ofRequestProcessor { clientRequest ->
+                val newRequest =
+                    ClientRequest.from(clientRequest)
+                        .header("x-api-key", walletsApiConfiguration.apiKey)
+                        .build()
+                Mono.just(newRequest)
+            }
         val webClient =
             ApiClient.buildWebClientBuilder()
                 .clientConnector(ReactorClientHttpConnector(httpClient))
                 .baseUrl(walletsApiConfiguration.uri)
+                .filter(apiKeyFilter)
                 .build()
         val apiClient = ApiClient(webClient).setBasePath(walletsApiConfiguration.uri)
         return WalletsApi(apiClient)
