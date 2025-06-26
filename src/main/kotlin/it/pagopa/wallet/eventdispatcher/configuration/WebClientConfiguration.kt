@@ -34,21 +34,13 @@ class WebClientConfiguration {
                         )
                     )
                 }
-        val apiKeyFilter =
-            ExchangeFilterFunction.ofRequestProcessor { clientRequest ->
-                val newRequest =
-                    ClientRequest.from(clientRequest)
-                        .header("x-api-key", walletsApiConfiguration.apiKey)
-                        .build()
-                Mono.just(newRequest)
-            }
         val webClient =
             ApiClient.buildWebClientBuilder()
                 .clientConnector(ReactorClientHttpConnector(httpClient))
                 .baseUrl(walletsApiConfiguration.uri)
-                .filter(apiKeyFilter)
                 .build()
         val apiClient = ApiClient(webClient).setBasePath(walletsApiConfiguration.uri)
+        apiClient.setApiKey(walletsApiConfiguration.apiKey)
         return WalletsApi(apiClient)
     }
 }
