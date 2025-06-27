@@ -116,7 +116,7 @@ microservice-chart:
     WALLET_STORAGE_QUEUE_KEY: wallet-storage-account-key
     AZURE_EVENTHUB_CONNECTION_STRING: sender-evt-tx-event-hub-connection-string
     REDIS_PASSWORD: redis-wallet-password
-    WALLET_SERVICE_API_KEY: payment-wallet-service-active-api-key
+    WALLET_SERVICE_API_KEY: payment-wallet-service-for-event-dispatcher-api-key
   keyvault:
     name: "pagopa-u-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
