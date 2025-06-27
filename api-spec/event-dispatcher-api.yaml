@@ -14,8 +14,6 @@ tags:
 externalDocs:
   url: TODO
   description: Design review
-security:
-  - ApiKeyAuth: [ ]
 servers:
   - url: http://localhost
 paths:
@@ -95,11 +93,6 @@ paths:
                 status: 500
                 detail: There was an error processing the request
 components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: x-api-key
   schemas:
     EventReceiverCommandRequest:
       type: object
