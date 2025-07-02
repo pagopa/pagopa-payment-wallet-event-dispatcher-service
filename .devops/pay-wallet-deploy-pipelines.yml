@@ -116,13 +116,13 @@ stages:
     dependsOn: [ ]
     condition:
       and(
-        succeeded(),
-        eq(${{parameters.SKIP_BUILD}}, false),
-        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-        or(
-         eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-         startsWith(variables['Build.SourceBranch'], 'refs/tags')
-        )
+      succeeded(),
+      eq(${{parameters.SKIP_BUILD}}, false),
+      eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+      or(
+      eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+      startsWith(variables['Build.SourceBranch'], 'refs/tags')
+      )
       )
     jobs:
       - job: "build"
@@ -150,8 +150,8 @@ stages:
     dependsOn: Get_Release_Version
     condition:
       and(
-        succeeded(),
-        eq(${{parameters.UAT_SKIP_BLUE_DEPLOYMENT}}, False)
+      succeeded(),
+      eq(${{parameters.UAT_SKIP_BLUE_DEPLOYMENT}}, False)
       )
     variables:
       green_app_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
@@ -190,7 +190,7 @@ stages:
 
   - stage: "Bluegreen_WaitForApproval"
     displayName: 'UAT green approval deployment'
-    dependsOn: [Get_Release_Version, Deploy_UAT_Blue]
+    dependsOn: [ Get_Release_Version, Deploy_UAT_Blue ]
     variables:
       commitUrl: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.commitUrl'] ]
     jobs:
@@ -479,10 +479,12 @@ stages:
             parameters:
               ENV: PROD
               TARGET_DEPLOYMENT_VERSION: STAGING
+              SERVICE_API_KEY: $(PROD_SERVICE_API_KEY)
           - template: azure-templates/stop-receivers.yml
             parameters:
               ENV: PROD
               TARGET_DEPLOYMENT_VERSION: PROD
+              SERVICE_API_KEY: $(PROD_SERVICE_API_KEY)
 
 
   # STEP 3: Deploy new release as Deployment PROD approval task
@@ -586,10 +588,12 @@ stages:
             parameters:
               ENV: PROD
               TARGET_DEPLOYMENT_VERSION: PROD
+              SERVICE_API_KEY: $(PROD_SERVICE_API_KEY)
           - template: azure-templates/stop-receivers.yml
             parameters:
               ENV: PROD
               TARGET_DEPLOYMENT_VERSION: STAGING
+              SERVICE_API_KEY: $(PROD_SERVICE_API_KEY)
 
 
   # STEP 5: deployment rollout ended, scale down staging deployment PODS
@@ -701,10 +705,12 @@ stages:
             parameters:
               ENV: PROD
               TARGET_DEPLOYMENT_VERSION: STAGING
+              SERVICE_API_KEY: $(PROD_SERVICE_API_KEY)
           - template: azure-templates/stop-receivers.yml
             parameters:
               ENV: PROD
               TARGET_DEPLOYMENT_VERSION: PROD
+              SERVICE_API_KEY: $(PROD_SERVICE_API_KEY)
 
   # STEP 2: rollback new release
   - stage: Rollback_New_Deployment_Helm_Release
@@ -756,10 +762,12 @@ stages:
             parameters:
               ENV: PROD
               TARGET_DEPLOYMENT_VERSION: PROD
+              SERVICE_API_KEY: $(PROD_SERVICE_API_KEY)
           - template: azure-templates/stop-receivers.yml
             parameters:
               ENV: PROD
               TARGET_DEPLOYMENT_VERSION: STAGING
+              SERVICE_API_KEY: $(PROD_SERVICE_API_KEY)
   # STEP 4: scale down staging release (by adding back annotation to scaledObject)
   - stage: Scale_Down_Staging_Deployment_Approval_Rollback
     dependsOn: Start_New_Stop_Staging_Receivers_Rollback
