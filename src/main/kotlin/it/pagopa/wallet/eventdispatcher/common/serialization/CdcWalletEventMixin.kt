@@ -30,6 +30,7 @@ import it.pagopa.wallet.eventdispatcher.common.serialization.CdcWalletEventMixin
 )
 interface CdcWalletEventMixin {
     @JsonProperty("_id") fun getId(): String?
+
     companion object {
         const val WALLET_APPLICATIONS_UPDATE_TYPE =
             "it.pagopa.wallet.audit.WalletApplicationsUpdatedEvent"
