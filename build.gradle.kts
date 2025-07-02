@@ -8,10 +8,10 @@ version = "0.12.1"
 description = "pagopa-wallet-event-dispatcher-service"
 
 object Deps {
-  const val kotlinBom = "1.7.22"
-  const val kotlinCoroutinesBom = "1.6.4"
-  const val springBootVersion = "3.3.1"
-  const val springCloudAzureVersion = "5.13.0"
+  const val kotlinBom = "2.2.0"
+  const val kotlinCoroutinesBom = "1.9.0"
+  const val springBootVersion = "3.4.5"
+  const val springCloudAzureVersion = "5.22.0"
   const val vavrVersion = "0.10.4"
   const val nettyMacosResolver = "4.1.90.Final"
   const val ecsLoggingVersion = "1.5.0"
@@ -29,21 +29,30 @@ object Deps {
 
 plugins {
   id("java")
-  id("org.springframework.boot") version "3.3.1"
+  id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.5"
-  id("com.diffplug.spotless") version "6.18.0"
+  id("com.diffplug.spotless") version "6.25.0"
   id("org.openapi.generator") version "7.1.0"
   id("org.sonarqube") version "4.4.1.3373"
   id("com.dipien.semantic-version") version "2.0.0" apply false
-  kotlin("plugin.spring") version "1.8.10"
-  kotlin("jvm") version "1.8.10"
+  kotlin("plugin.spring") version "2.2.0"
+  kotlin("jvm") version "2.2.0"
   jacoco
   application
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-tasks.withType<KotlinCompile> { kotlinOptions.jvmTarget = "17" }
+tasks.withType<KotlinCompile> {
+  compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
+}
+
+tasks.withType<KotlinCompile> {
+  compilerOptions {
+    apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+    languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+  }
+}
 
 repositories { mavenCentral() }
 
@@ -78,6 +87,7 @@ dependencies {
   implementation("com.azure.spring:spring-cloud-azure-starter-integration-storage-queue")
   implementation("com.azure:azure-storage-queue")
   implementation("com.azure:azure-core-serializer-json-jackson")
+  implementation("com.azure:azure-identity")
 
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -162,7 +172,11 @@ tasks.create("applySemanticVersionPlugin") {
 
 tasks.withType<KotlinCompile> {
   dependsOn("walletsApi", "eventDispatcherApi")
-  kotlinOptions.jvmTarget = "17"
+  compilerOptions {
+    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+    languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+  }
 }
 
 tasks.withType(JavaCompile::class.java).configureEach { options.encoding = "UTF-8" }
