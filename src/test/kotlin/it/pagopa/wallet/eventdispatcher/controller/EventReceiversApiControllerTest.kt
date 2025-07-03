@@ -5,8 +5,10 @@ import it.pagopa.wallet.eventdispatcher.exceptions.NoEventReceiverStatusFound
 import it.pagopa.wallet.eventdispatcher.service.EventReceiverService
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.NullSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -31,6 +33,7 @@ class EventReceiversApiControllerTest {
         webClient
             .post()
             .uri("/event-receivers/commands")
+            .header("x-api-key", "primary-key")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(request)
             .exchange()
@@ -49,6 +52,7 @@ class EventReceiversApiControllerTest {
         webClient
             .post()
             .uri("/event-receivers/commands")
+            .header("x-api-key", "primary-key")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(
                 """
@@ -79,6 +83,7 @@ class EventReceiversApiControllerTest {
         webClient
             .post()
             .uri("/event-receivers/commands")
+            .header("x-api-key", "primary-key")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(request)
             .exchange()
@@ -110,6 +115,7 @@ class EventReceiversApiControllerTest {
         webClient
             .get()
             .uri("/event-receivers/status")
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isOk
@@ -129,10 +135,26 @@ class EventReceiversApiControllerTest {
         webClient
             .get()
             .uri("/event-receivers/status")
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNotFound
             .expectBody(ProblemJsonDto::class.java)
             .isEqualTo(expectedProblemJsonDto)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["invalid-key"])
+    @NullSource
+    fun `Should return 401 for missing or invalid api key`(apiKey: String?) = runTest {
+        webClient
+            .post()
+            .uri("/event-receivers/commands")
+            .header("x-api-key", apiKey)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("{}")
+            .exchange()
+            .expectStatus()
+            .isUnauthorized
     }
 }
