@@ -35,6 +35,7 @@ class WebClientConfiguration {
             ApiClient.buildWebClientBuilder()
                 .clientConnector(ReactorClientHttpConnector(httpClient))
                 .baseUrl(walletsApiConfiguration.uri)
+                .defaultHeader("x-api-key", walletsApiConfiguration.apiKey)
                 .build()
         val apiClient = ApiClient(webClient).setBasePath(walletsApiConfiguration.uri)
         return WalletsApi(apiClient)
