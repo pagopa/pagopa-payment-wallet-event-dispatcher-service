@@ -20,7 +20,7 @@ microservice-chart:
     envSecret: {}
   image:
     repository: pagopauitncoreacr.azurecr.io/pagopapaymentwalleteventdispatcherservice
-    tag: "0.12.1"
+    tag: "0.14.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -111,11 +111,15 @@ microservice-chart:
     REDIS_STREAM_EVENT_CONTROLLER_STREAM_KEY: "wallet-event-dispatcher-commands"
     REDIS_STREAM_EVENT_CONTROLLER_CONSUMER_NAME_PREFIX: "event-dispatcher"
     EVENT_CONTROLLER_STATUS_POLLING_CHRON: "*/10 * * * * *"
+    SECURITY_API_KEYS_SECURED_PATHS: "/event-receivers"
   envSecret:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
     WALLET_STORAGE_QUEUE_KEY: wallet-storage-account-key
     AZURE_EVENTHUB_CONNECTION_STRING: sender-evt-tx-event-hub-connection-string
     REDIS_PASSWORD: redis-wallet-password
+    SECURITY_API_KEYS_PRIMARY: pay-wallet-event-dispatcher-service-primary-api-key
+    SECURITY_API_KEYS_SECONDARY: pay-wallet-event-dispatcher-service-secondary-api-key
+    WALLET_SERVICE_API_KEY: payment-wallet-service-active-api-key
   keyvault:
     name: "pagopa-u-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"

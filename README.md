@@ -81,6 +81,9 @@ If you want to customize the application environment, reference this table:
 | REDIS_PASSWORD                                       | Redis port                                                                                 | string  |                         |
 | REDIS_PORT                                           | Redis password                                                                             | number  |                         |
 | REDIS_SSL_ENABLED                                    | Boolean value indicating if SSL is enabled for connection to redis                         | boolean |                         |
+| SECURITY_API_KEYS_SECURED_PATHS                      | Comma-separated list of secured API paths                                                  | string  |                         |
+| SECURITY_API_KEYS_PRIMARY                            | Secured api primary key                                                                    | string  |                         |
+| SECURITY_API_KEYS_SECONDARY                          | Secured api secondary key                                                                  | string  |                         |
 
 ### Run docker container
 
