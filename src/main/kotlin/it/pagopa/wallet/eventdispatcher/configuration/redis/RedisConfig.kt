@@ -41,7 +41,10 @@ class RedisConfig {
     ): EventDispatcherCommandsTemplateWrapper {
         // Setting up a ReactiveRedisTemplate for EventDispatcherReceiverCommand
         val jacksonSerializer =
-            Jackson2JsonRedisSerializer(EventDispatcherReceiverCommand::class.java)
+            Jackson2JsonRedisSerializer(
+                jacksonObjectMapper(),
+                EventDispatcherReceiverCommand::class.java
+            )
         val redisTemplate =
             ReactiveRedisTemplate<String, EventDispatcherReceiverCommand>(
                 redisConnectionFactory,
