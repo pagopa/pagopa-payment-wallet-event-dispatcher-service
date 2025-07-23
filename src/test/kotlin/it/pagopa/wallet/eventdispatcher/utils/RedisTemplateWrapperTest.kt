@@ -2,6 +2,7 @@ package it.pagopa.wallet.eventdispatcher.utils
 
 import java.time.Duration
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
@@ -12,6 +13,7 @@ import org.springframework.data.redis.core.ReactiveStreamOperations
 import org.springframework.data.redis.core.ReactiveValueOperations
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 
 class RedisTemplateWrapperTest {
 
@@ -77,9 +79,14 @@ class RedisTemplateWrapperTest {
         val event = "event"
         val streamSize = 1L
         val recordId = RecordId.of(0, 0)
+
+        // Configura i mock per stream
         given(reactiveRedisTemplate.opsForStream<String, String>()).willReturn(opsForStream)
-        given(opsForStream.trim(any(), any())).willReturn(Mono.just(0L))
-        given(opsForStream.add(any())).willReturn(Mono.just(recordId))
+        given(opsForStream.trim(streamKey, streamSize))
+            .willReturn(Mono.just(0L)) // Assicurati che trim restituisca Mono.just(0L)
+        given(opsForStream.add(ObjectRecord.create(streamKey, event)))
+            .willReturn(Mono.just(recordId)) // Restituisci un RecordId valido
+
         // test
         mockedRedisTemplateWrapper
             .writeEventToStreamTrimmingEvents(
@@ -88,6 +95,7 @@ class RedisTemplateWrapperTest {
                 streamSize = streamSize
             )
             .block()
+
         // assertions
         verify(reactiveRedisTemplate, times(2)).opsForStream<String, String>()
         verify(opsForStream, times(1)).trim(streamKey, streamSize)
@@ -135,14 +143,21 @@ class RedisTemplateWrapperTest {
     @Test
     fun `Should find all values in keyspace`() {
         // pre-requisites
-        given(reactiveRedisTemplate.keys(any())).willReturn(Flux.just("key1", "key2"))
+        val keys = setOf("key1", "key2")
+        val values = listOf("value1", "value2")
+        given(reactiveRedisTemplate.keys(any<String>())).willReturn(Flux.fromIterable(keys))
         given(reactiveRedisTemplate.opsForValue()).willReturn(opsForValue)
-        given(opsForValue.multiGet(any())).willReturn(Mono.just(listOf<String>()))
+        given(opsForValue.multiGet(any())).willReturn(Mono.just(values))
         // test
-        mockedRedisTemplateWrapper.allValuesInKeySpace().collectList().block()
+        val returnedValue = mockedRedisTemplateWrapper.allValuesInKeySpace()
+
         // assertions
+        StepVerifier.create(returnedValue).expectNext(values[0], values[1]).verifyComplete()
+
         verify(reactiveRedisTemplate, times(1)).keys("$keyspace*")
         verify(reactiveRedisTemplate, times(1)).opsForValue()
-        verify(opsForValue, times(1)).multiGet(setOf("key1", "key2"))
+        val captor = argumentCaptor<Collection<String>>()
+        verify(opsForValue, times(1)).multiGet(captor.capture())
+        assertTrue(captor.firstValue.containsAll(keys) && keys.containsAll(captor.firstValue))
     }
 }

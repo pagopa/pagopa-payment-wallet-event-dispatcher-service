@@ -71,9 +71,15 @@ abstract class ReactiveRedisTemplateWrapper<V : Any>(
      *
      * @return a list populated with all the entries in keyspace
      */
-    fun allValuesInKeySpace(): Flux<V> =
-        keysInKeyspace().flatMap { key -> reactiveRedisTemplate.opsForValue().get(key) }
-
+    fun allValuesInKeySpace(): Flux<V> {
+        return keysInKeyspace().collectList().flatMapMany { keys ->
+            if (keys.isEmpty()) Flux.empty()
+            else
+                reactiveRedisTemplate.opsForValue().multiGet(keys).flatMapMany {
+                    Flux.fromIterable(it.filterNotNull())
+                }
+        }
+    }
     /**
      * Get the Redis key from the input entity
      *

@@ -16,25 +16,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer
 @Configuration
 class RedisConfig {
 
-    //    @Bean
-    //    fun eventDispatcherCommandRedisTemplateWrapper(
-    //        redisConnectionFactory: RedisConnectionFactory
-    //    ): EventDispatcherCommandsTemplateWrapper {
-    //        val redisTemplate = RedisTemplate<String, EventDispatcherReceiverCommand>()
-    //        redisTemplate.connectionFactory = redisConnectionFactory
-    //        redisTemplate.defaultSerializer = StringRedisSerializer()
-    //        redisTemplate.afterPropertiesSet()
-    //        /*
-    //         * This redis template instance is to write events to Redis Stream through
-    // opsForStreams apis.
-    //         * No document is written into cache.
-    //         * Set TTL to 0 here will throw an error during writing operation to cache to enforce
-    // the fact that this
-    //         * wrapper has to be used only to write to Redis Streams
-    //         */
-    //        return EventDispatcherCommandsTemplateWrapper(redisTemplate, Duration.ZERO)
-    //    }
-
     @Bean
     fun eventDispatcherCommandRedisTemplateWrapper(
         redisConnectionFactory: ReactiveRedisConnectionFactory
@@ -50,29 +31,16 @@ class RedisConfig {
                 redisConnectionFactory,
                 RedisSerializationContext.newSerializationContext<
                         String, EventDispatcherReceiverCommand
-                    >()
-                    .key(StringRedisSerializer())
+                    >(
+                        StringRedisSerializer()
+                    )
+                    // .key(StringRedisSerializer())
                     .value(jacksonSerializer)
                     .build()
             )
 
         return EventDispatcherCommandsTemplateWrapper(redisTemplate, Duration.ZERO)
     }
-
-    //    @Bean
-    //    fun eventDispatcherReceiverStatusTemplateWrapper(
-    //        redisConnectionFactory: RedisConnectionFactory
-    //    ): EventDispatcherReceiverStatusTemplateWrapper {
-    //        val jacksonSerializer =
-    //            Jackson2JsonRedisSerializer(jacksonObjectMapper(), ReceiversStatus::class.java)
-    //        val redisTemplate = RedisTemplate<String, ReceiversStatus>()
-    //        redisTemplate.connectionFactory = redisConnectionFactory
-    //        redisTemplate.keySerializer = StringRedisSerializer()
-    //        redisTemplate.valueSerializer = jacksonSerializer
-    //        redisTemplate.afterPropertiesSet()
-    //        return EventDispatcherReceiverStatusTemplateWrapper(redisTemplate,
-    // Duration.ofMinutes(1))
-    //    }
 
     @Bean
     fun eventDispatcherReceiverStatusTemplateWrapper(
@@ -84,8 +52,10 @@ class RedisConfig {
         val redisTemplate =
             ReactiveRedisTemplate<String, ReceiversStatus>(
                 redisConnectionFactory,
-                RedisSerializationContext.newSerializationContext<String, ReceiversStatus>()
-                    .key(StringRedisSerializer())
+                RedisSerializationContext.newSerializationContext<String, ReceiversStatus>(
+                        StringRedisSerializer()
+                    )
+                    // .key(StringRedisSerializer())
                     .value(jacksonSerializer)
                     .build()
             )
