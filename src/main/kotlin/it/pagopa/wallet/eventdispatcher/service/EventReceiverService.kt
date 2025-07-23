@@ -6,6 +6,7 @@ import it.pagopa.wallet.eventdispatcher.configuration.redis.EventDispatcherComma
 import it.pagopa.wallet.eventdispatcher.configuration.redis.EventDispatcherReceiverStatusTemplateWrapper
 import it.pagopa.wallet.eventdispatcher.exceptions.NoEventReceiverStatusFound
 import it.pagopa.wallet.eventdispatcher.streams.commands.EventDispatcherReceiverCommand
+import kotlinx.coroutines.reactive.awaitSingle
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -49,19 +50,21 @@ class EventReceiverService(
     suspend fun getReceiversStatus(
         deploymentVersionDto: DeploymentVersionDto?
     ): EventReceiverStatusResponseDto {
-        val lastStatuses =
-            eventDispatcherReceiverStatusTemplateWrapper.allValuesInKeySpace()?.filter {
-                if (deploymentVersionDto != null) {
-                    it.version == deploymentVersionDto
-                } else {
-                    true
-                }
+        val lastStatuses = eventDispatcherReceiverStatusTemplateWrapper.allValuesInKeySpace()
+
+        val statusesList = lastStatuses.collectList().awaitSingle()
+
+        val filteredStatuses =
+            statusesList.filter {
+                deploymentVersionDto == null || it.version == deploymentVersionDto
             }
-        if (lastStatuses.isNullOrEmpty()) {
+
+        if (filteredStatuses.isEmpty()) {
             throw NoEventReceiverStatusFound()
         }
+
         val receiverStatuses =
-            lastStatuses.map { receiverStatuses ->
+            filteredStatuses.map { receiverStatuses ->
                 EventReceiverStatusDto(
                     receiverStatuses =
                         receiverStatuses.receiverStatuses.map { receiverStatus ->
