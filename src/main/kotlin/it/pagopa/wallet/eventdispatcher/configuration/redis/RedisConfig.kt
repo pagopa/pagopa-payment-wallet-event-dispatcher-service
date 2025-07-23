@@ -34,7 +34,6 @@ class RedisConfig {
                     >(
                         StringRedisSerializer()
                     )
-                    // .key(StringRedisSerializer())
                     .value(jacksonSerializer)
                     .build()
             )
@@ -55,7 +54,6 @@ class RedisConfig {
                 RedisSerializationContext.newSerializationContext<String, ReceiversStatus>(
                         StringRedisSerializer()
                     )
-                    // .key(StringRedisSerializer())
                     .value(jacksonSerializer)
                     .build()
             )
