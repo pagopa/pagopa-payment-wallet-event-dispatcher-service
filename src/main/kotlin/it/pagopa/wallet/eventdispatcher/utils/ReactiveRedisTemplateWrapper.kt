@@ -85,8 +85,4 @@ abstract class ReactiveRedisTemplateWrapper<V : Any>(
      * @return the key associated to the input entity
      */
     protected abstract fun getKeyFromEntity(value: V): String
-
-    private fun compoundKeyWithKeyspace(key: String): String {
-        return "$keyspace:$key"
-    }
 }
