@@ -27,10 +27,8 @@ abstract class ReactiveRedisTemplateWrapper<V : Any>(
      * @param ttl - the TTL to be used for save operation (with default ttl as value)
      */
     fun save(value: V, ttl: Duration = defaultTTL): Mono<Boolean> {
-        return reactiveRedisTemplate
-            .opsForValue()
-            .set(compoundKeyWithKeyspace(getKeyFromEntity(value)), value, ttl)
-            .map { result -> result }
+        val key = "$keyspace:${getKeyFromEntity(value)}"
+        return reactiveRedisTemplate.opsForValue().set(key, value, ttl)
     }
 
     /**
