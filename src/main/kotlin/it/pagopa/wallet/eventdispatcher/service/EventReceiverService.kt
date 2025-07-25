@@ -35,14 +35,16 @@ class EventReceiverService(
         logger.info("Received event receiver command request, command: {}", commandToSend)
         // trim all events before adding new event to be processed
         val recordId =
-            eventDispatcherCommandsTemplateWrapper.writeEventToStreamTrimmingEvents(
-                redisStreamConf.streamKey,
-                EventDispatcherReceiverCommand(
-                    receiverCommand = commandToSend,
-                    version = eventReceiverCommandRequestDto.deploymentVersion
-                ),
-                0
-            )
+            eventDispatcherCommandsTemplateWrapper
+                .writeEventToStreamTrimmingEvents(
+                    redisStreamConf.streamKey,
+                    EventDispatcherReceiverCommand(
+                        receiverCommand = commandToSend,
+                        version = eventReceiverCommandRequestDto.deploymentVersion
+                    ),
+                    0
+                )
+                .awaitSingle()
 
         logger.info("Sent new event to Redis stream with id: [{}]", recordId)
     }
