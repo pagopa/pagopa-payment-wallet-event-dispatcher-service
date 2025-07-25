@@ -8,6 +8,7 @@ import it.pagopa.wallet.eventdispatcher.repositories.redis.bean.Status
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
+import reactor.core.publisher.Mono
 
 class EventReceiverStatusPollerTest {
 
@@ -45,7 +46,8 @@ class EventReceiverStatusPollerTest {
             )
         given(inboundChannelAdapterLifecycleHandlerService.getAllChannelStatus())
             .willReturn(receiverStatuses)
-        doNothing().`when`(eventDispatcherReceiverStatusTemplateWrapper).save(any(), any())
+        given(eventDispatcherReceiverStatusTemplateWrapper.save(any(), anyOrNull()))
+            .willReturn(Mono.just(true))
         // test
         eventReceiverStatusPoller.eventReceiverStatusPoller()
         verify(eventDispatcherReceiverStatusTemplateWrapper, times(1))

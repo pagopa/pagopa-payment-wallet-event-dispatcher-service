@@ -3,7 +3,10 @@ package it.pagopa.wallet.eventdispatcher.utils
 import java.time.Duration
 import org.springframework.data.redis.connection.stream.ObjectRecord
 import org.springframework.data.redis.connection.stream.RecordId
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.RedisTemplate
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 /**
  * This class is a [RedisTemplate] wrapper class, used to centralize commons RedisTemplate
@@ -11,8 +14,8 @@ import org.springframework.data.redis.core.RedisTemplate
  *
  * @param <V> - the RedisTemplate value type </V>
  */
-abstract class RedisTemplateWrapper<V>(
-    private val redisTemplate: RedisTemplate<String, V>,
+abstract class ReactiveRedisTemplateWrapper<V : Any>(
+    private val reactiveRedisTemplate: ReactiveRedisTemplate<String, V>,
     private val keyspace: String,
     private val defaultTTL: Duration
 ) {
@@ -23,8 +26,9 @@ abstract class RedisTemplateWrapper<V>(
      * @param value - the entity to be saved
      * @param ttl - the TTL to be used for save operation (with default ttl as value)
      */
-    fun save(value: V, ttl: Duration = defaultTTL) {
-        redisTemplate.opsForValue()[compoundKeyWithKeyspace(getKeyFromEntity(value)), value] = ttl
+    fun save(value: V, ttl: Duration = defaultTTL): Mono<Boolean> {
+        val key = "$keyspace:${getKeyFromEntity(value)}"
+        return reactiveRedisTemplate.opsForValue().set(key, value, ttl)
     }
 
     /**
@@ -36,10 +40,21 @@ abstract class RedisTemplateWrapper<V>(
      * @param streamSize the wanted length of the stream
      * @return the [RecordId] associated to the written event
      */
-    fun writeEventToStreamTrimmingEvents(streamKey: String, event: V, streamSize: Long): RecordId? {
+    fun writeEventToStreamTrimmingEvents(
+        streamKey: String,
+        event: V,
+        streamSize: Long
+    ): Mono<RecordId> {
         require(streamSize >= 0) { "Invalid input $streamSize events to trim, it must be >=0" }
-        redisTemplate.opsForStream<Any, Any>().trim(streamKey, streamSize)
-        return redisTemplate.opsForStream<Any, Any>().add(ObjectRecord.create(streamKey, event))
+
+        return reactiveRedisTemplate
+            .opsForStream<Any, Any>()
+            .trim(streamKey, streamSize)
+            .then(
+                reactiveRedisTemplate
+                    .opsForStream<Any, Any>()
+                    .add(ObjectRecord.create(streamKey, event))
+            )
     }
 
     /**
@@ -47,16 +62,22 @@ abstract class RedisTemplateWrapper<V>(
      *
      * @return a set populated with all the keys in keyspace
      */
-    fun keysInKeyspace(): Set<String> = redisTemplate.keys("$keyspace*")
+    fun keysInKeyspace(): Flux<String> = reactiveRedisTemplate.keys("$keyspace*")
 
     /**
      * Get all the values in keyspace
      *
      * @return a list populated with all the entries in keyspace
      */
-    fun allValuesInKeySpace(): MutableList<V>? =
-        redisTemplate.opsForValue().multiGet(keysInKeyspace())
-
+    fun allValuesInKeySpace(): Flux<V> {
+        return keysInKeyspace().collectList().flatMapMany { keys ->
+            if (keys.isEmpty()) Flux.empty()
+            else
+                reactiveRedisTemplate.opsForValue().multiGet(keys).flatMapMany {
+                    Flux.fromIterable(it.filterNotNull())
+                }
+        }
+    }
     /**
      * Get the Redis key from the input entity
      *
@@ -64,8 +85,4 @@ abstract class RedisTemplateWrapper<V>(
      * @return the key associated to the input entity
      */
     protected abstract fun getKeyFromEntity(value: V): String
-
-    private fun compoundKeyWithKeyspace(key: String): String {
-        return "$keyspace:$key"
-    }
 }

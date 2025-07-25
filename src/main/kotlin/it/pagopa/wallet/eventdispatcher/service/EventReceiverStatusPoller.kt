@@ -46,6 +46,6 @@ class EventReceiverStatusPoller(
             )
         // save new receivers status as redis instance, all records will be saved with the same key,
         // making this document to be updated automatically for each poll
-        eventDispatcherReceiverStatusTemplateWrapper.save(receiversStatus)
+        eventDispatcherReceiverStatusTemplateWrapper.save(receiversStatus).subscribe()
     }
 }
