@@ -54,7 +54,7 @@ class EventReceiverService(
     ): EventReceiverStatusResponseDto {
         val lastStatuses = eventDispatcherReceiverStatusTemplateWrapper.allValuesInKeySpace()
 
-        val statusesList = lastStatuses.collectList().awaitSingle().toList()
+        val statusesList = lastStatuses.collectList().awaitSingle()
 
         val filteredStatuses =
             statusesList.filter {
