@@ -4,7 +4,7 @@
 
 This microservice is responsible for processing asynchronous workflows involving wallets inside the PagoPA platform.
 For more information about wallets, see [pagopa-wallet-service](https://github.com/pagopa/pagopa-wallet-service).
-
+ 
 - [PagoPA Wallet Event Dispatcher Service](#pagopa-wallet-event-dispatcher-service)
     * [Technology Stack](#technology-stack)
     * [Start Project Locally 🚀](#start-project-locally-)
