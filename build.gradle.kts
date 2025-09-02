@@ -3,7 +3,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 group = "it.pagopa.wallet.eventdispatcher"
 
-version = "1.0.2"
+version = "1.1.0"
 
 description = "pagopa-wallet-event-dispatcher-service"
 
