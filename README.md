@@ -1,6 +1,7 @@
 # PagoPA Wallet Event Dispatcher Service
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-wallet-event-dispatcher-service&metric=alert_status)](https://sonarcloud.io/dashboard?id=pagopa_pagopa-wallet-event-dispatcher-service)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-payment-wallet-event-dispatcher-service&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pagopa_pagopa-payment-wallet-event-dispatcher-service)
 
 This microservice is responsible for processing asynchronous workflows involving wallets inside the PagoPA platform.
 For more information about wallets, see [pagopa-wallet-service](https://github.com/pagopa/pagopa-wallet-service).
