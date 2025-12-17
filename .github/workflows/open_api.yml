@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         spec:
-          - path: 'api-spec/wallet-api.yaml'
+          - path: 'api-spec/event-dispatcher-api.yaml'
             version: 'v1'
           
     steps:
