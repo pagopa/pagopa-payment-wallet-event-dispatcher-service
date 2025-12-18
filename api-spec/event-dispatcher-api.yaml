@@ -20,13 +20,13 @@ security:
 servers:
   - url: https://${hostname}
     variables:
-    hostname:
-        description: The hostname of the API server
-        default: itnprod.pay-wallet.internal.platform.pagopa.it
-        enum:
-          - itndev.pay-wallet.internal.dev.platform.pagopa.it
-          - itnuat.pay-wallet.internal.uat.platform.pagopa.it
-          - itnprod.pay-wallet.internal.platform.pagopa.it
+      hostname:
+          description: The hostname of the API server
+          default: itnprod.pay-wallet.internal.platform.pagopa.it
+          enum:
+            - itndev.pay-wallet.internal.dev.platform.pagopa.it
+            - itnuat.pay-wallet.internal.uat.platform.pagopa.it
+            - itnprod.pay-wallet.internal.platform.pagopa.it
 paths:
   /event-receivers/commands:
     post:
