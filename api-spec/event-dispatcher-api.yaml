@@ -5,6 +5,7 @@ info:
   description: This microservice handles wallet onboarding lifecycle and workflow processing async events.
   contact:
     name: pagoPA - Touchpoints team
+    url: https://www.pagopa.it/
 tags:
   - name: event-receiver-controller
     description: Api's for handle events receivers status
@@ -14,8 +15,18 @@ tags:
 externalDocs:
   url: TODO
   description: Design review
+security:
+  - ApiKeyAuth: [ ]
 servers:
-  - url: http://localhost
+  - url: https://${hostname}
+    variables:
+      hostname:
+          description: The hostname of the API server
+          default: itnprod.pay-wallet.internal.platform.pagopa.it
+          enum:
+            - itndev.pay-wallet.internal.dev.platform.pagopa.it
+            - itnuat.pay-wallet.internal.uat.platform.pagopa.it
+            - itnprod.pay-wallet.internal.platform.pagopa.it
 paths:
   /event-receivers/commands:
     post:
@@ -39,7 +50,16 @@ paths:
                 title: Bad request
                 status: 400
                 detail: Invalid input request
-
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                title: Unauthorized
+                status: 401
+                detail: Unauthorized request
         '500':
           description: Internal Server Error handling command
           content:
@@ -71,6 +91,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EventReceiverStatusResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                title: Unauthorized
+                status: 401
+                detail: Unauthorized request
         '404':
           description: No receiver status information found
           content:
@@ -209,3 +239,8 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/EventReceiverStatusResponse"
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
