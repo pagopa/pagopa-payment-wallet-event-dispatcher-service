@@ -7,9 +7,11 @@ import it.pagopa.wallet.eventdispatcher.common.cdc.LoggingEvent
 import it.pagopa.wallet.eventdispatcher.common.cdc.WalletApplicationsUpdatedEvent
 import it.pagopa.wallet.eventdispatcher.common.cdc.WalletDeletedEvent
 import it.pagopa.wallet.eventdispatcher.common.cdc.WalletOnboardCompletedEvent
+import it.pagopa.wallet.eventdispatcher.common.cdc.WalletOnboardReplacedEvent
 import it.pagopa.wallet.eventdispatcher.common.serialization.CdcWalletEventMixin.Companion.WALLET_APPLICATIONS_UPDATE_TYPE
 import it.pagopa.wallet.eventdispatcher.common.serialization.CdcWalletEventMixin.Companion.WALLET_DELETED_TYPE
 import it.pagopa.wallet.eventdispatcher.common.serialization.CdcWalletEventMixin.Companion.WALLET_ONBOARD_COMPLETE_TYPE
+import it.pagopa.wallet.eventdispatcher.common.serialization.CdcWalletEventMixin.Companion.WALLET_ONBOARD_REPLACED_TYPE
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -22,6 +24,10 @@ import it.pagopa.wallet.eventdispatcher.common.serialization.CdcWalletEventMixin
     JsonSubTypes.Type(
         value = WalletOnboardCompletedEvent::class,
         name = WALLET_ONBOARD_COMPLETE_TYPE
+    ),
+    JsonSubTypes.Type(
+        value = WalletOnboardReplacedEvent::class,
+        name = WALLET_ONBOARD_REPLACED_TYPE
     ),
     JsonSubTypes.Type(
         value = WalletApplicationsUpdatedEvent::class,
@@ -37,5 +43,6 @@ interface CdcWalletEventMixin {
         const val WALLET_DELETED_TYPE = "it.pagopa.wallet.audit.WalletDeletedEvent"
         const val WALLET_ONBOARD_COMPLETE_TYPE =
             "it.pagopa.wallet.audit.WalletOnboardCompletedEvent"
+        const val WALLET_ONBOARD_REPLACED_TYPE = "it.pagopa.wallet.audit.WalletOnboardReplacedEvent"
     }
 }
