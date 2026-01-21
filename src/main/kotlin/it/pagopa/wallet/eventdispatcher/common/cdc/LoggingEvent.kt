@@ -1,7 +1,6 @@
 package it.pagopa.wallet.eventdispatcher.common.cdc
 
 import java.time.OffsetDateTime
-import jdk.jfr.internal.event.EventConfiguration.timestamp
 
 open class LoggingEvent(
     open val id: String,
