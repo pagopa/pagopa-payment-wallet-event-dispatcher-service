@@ -1,4 +1,4 @@
-FROM amazoncorretto:21-alpine@sha256:6a98c4402708fe8d16e946b4b5bac396379ec5104c1661e2a27b2b45cf9e2d16 as build
+FROM amazoncorretto:21-alpine@sha256:6a98c4402708fe8d16e946b4b5bac396379ec5104c1661e2a27b2b45cf9e2d16 AS build
 WORKDIR /workspace/app
 
 COPY gradlew .
@@ -24,7 +24,7 @@ WORKDIR /app/
 ARG EXTRACTED=/workspace/app/build/extracted
 
 # OpenTelemetry agent
-ADD --chown=user https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.3.0/opentelemetry-javaagent.jar .
+ADD --chown=user https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.26.0/opentelemetry-javaagent.jar .
 
 COPY --from=build --chown=user ${EXTRACTED}/dependencies/ ./
 RUN true
