@@ -76,6 +76,8 @@ If you want to customize the application environment, reference this table:
 | WALLET_CDC_QUEUE_NAME                                | Storage queue name for event sent by cdc hub                                               | string  | wallet-cdc-queue        |
 | REDIS_STREAM_EVENT_CONTROLLER_STREAM_KEY             | Event (receivers) controller redis stream key                                              | string  |                         |
 | REDIS_STREAM_EVENT_CONTROLLER_CONSUMER_NAME_PREFIX   | Event (receivers) controller redis stream consumer name prefix                             | string  |                         |
+| REDIS_TIMEOUT                                        | Redis read timeout.                                                                        | string  |                         |
+| REDIS_CONNECTION_TIMEOUT                             | Redis connection timeout.                                                                  | string  |                         |
 | EVENT_CONTROLLER_STATUS_POLLING_CHRON                | Chron used to schedule event receivers status polling                                      | string  |                         |
 | DEPLOYMENT_VERSION                                   | Env property used to identify deployment version (STAGING/PROD)                            | string  | PROD                    |
 | REDIS_HOST                                           | Redis hostname                                                                             | string  |                         |
