@@ -110,6 +110,8 @@ microservice-chart:
     REDIS_SSL_ENABLED: "true"
     REDIS_STREAM_EVENT_CONTROLLER_STREAM_KEY: "wallet-event-dispatcher-commands"
     REDIS_STREAM_EVENT_CONTROLLER_CONSUMER_NAME_PREFIX: "event-dispatcher"
+    REDIS_TIMEOUT: "2s"
+    REDIS_CONNECTION_TIMEOUT: "2s"
     EVENT_CONTROLLER_STATUS_POLLING_CHRON: "*/10 * * * * *"
     SECURITY_API_KEYS_SECURED_PATHS: "/event-receivers"
   envSecret:
