@@ -101,6 +101,52 @@ class WalletCdcQueueConsumerTest {
     }
 
     @Test
+    fun `Should process wallet onboard replaced event successfully`() {
+        val walletId = UUID.randomUUID()
+        val walletId2 = UUID.randomUUID()
+        val eventId = UUID.randomUUID()
+        val creationDate = "2024-06-14T15:04:56.908428Z"
+        val walletOnboardReplacedEvent =
+            CdcQueueEvent(
+                tracingInfo = TracingInfo(),
+                data =
+                    WalletOnboardReplacedEvent(
+                        id = eventId.toString(),
+                        timestamp = creationDate,
+                        walletId = walletId.toString(),
+                        auditWallet =
+                            AuditWalletReplaced(
+                                replacedByWalletId = walletId2.toString(),
+                            )
+                    )
+            )
+        given(walletCDCService.sendToKafka(any())).willReturn(Mono.just(Unit))
+        given(checkPointer.success()).willReturn(Mono.empty())
+        StepVerifier.create(
+                walletCdcQueueConsumer.messageReceiver(
+                    payload = serializeEvent(walletOnboardReplacedEvent),
+                    checkPointer = checkPointer
+                )
+            )
+            .expectNext(Unit)
+            .verifyComplete()
+        verify(checkPointer, times(1)).success()
+
+        val span =
+            argumentCaptor<Span.() -> Unit> {
+                    verify(tracing, times(1)).customizeSpan(any<Mono<*>>(), capture())
+                }
+                .reduceSpan()
+
+        verifySpanAttributes(
+            span,
+            TracingKeys.CDC_EVENT_ID_KEY to eventId.toString(),
+            TracingKeys.CDC_WALLET_EVENT_TYPE_KEY to
+                WalletOnboardReplacedEvent::class.java.simpleName
+        )
+    }
+
+    @Test
     fun `Should ignore default logging event successfully`() {
         val eventId = UUID.randomUUID()
         val creationDate = "2024-06-14T15:04:56.908428Z"

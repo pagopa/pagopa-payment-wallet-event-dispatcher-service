@@ -20,7 +20,7 @@ microservice-chart:
     envSecret: {}
   image:
     repository: pagopapitncoreacr.azurecr.io/pagopapaymentwalleteventdispatcherservice
-    tag: "1.2.0"
+    tag: "1.5.1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -89,6 +89,7 @@ microservice-chart:
           scaleUp:
             stabilizationWindowSeconds: 60
   envConfig:
+    ACTIVE_PROFILE: k8s
     ENV: 'prod'
     APP_LOGGING_LEVEL: 'INFO'
     DEFAULT_LOGGING_LEVEL: 'INFO'
@@ -121,6 +122,8 @@ microservice-chart:
     REDIS_SSL_ENABLED: "true"
     REDIS_STREAM_EVENT_CONTROLLER_STREAM_KEY: "wallet-event-dispatcher-commands"
     REDIS_STREAM_EVENT_CONTROLLER_CONSUMER_NAME_PREFIX: "event-dispatcher"
+    REDIS_TIMEOUT: "2s"
+    REDIS_CONNECTION_TIMEOUT: "2s"
     EVENT_CONTROLLER_STATUS_POLLING_CHRON: "*/10 * * * * *"
     DEPLOYMENT_VERSION: "PROD"
     SECURITY_API_KEYS_SECURED_PATHS: "/event-receivers"

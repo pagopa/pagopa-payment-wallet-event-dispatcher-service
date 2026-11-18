@@ -38,6 +38,14 @@ data class WalletOnboardCompletedEvent(
     val auditWallet: AuditWallet
 ) : WalletLoggingEvent(walletId, id, timestamp)
 
+data class WalletOnboardReplacedEvent(
+    override val id: String,
+    override val timestamp: String,
+    override val type: String = WalletOnboardReplacedEvent::class.java.simpleName,
+    override val walletId: String,
+    val auditWallet: AuditWalletReplaced
+) : WalletLoggingEvent(walletId, id, timestamp)
+
 class WarmupLoggingEvent :
     LoggingEvent(
         id = "00000000-0000-0000-0000-000000000000",

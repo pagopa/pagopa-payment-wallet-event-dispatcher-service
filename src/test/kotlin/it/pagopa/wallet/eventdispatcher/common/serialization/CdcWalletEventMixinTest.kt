@@ -250,6 +250,39 @@ class CdcWalletEventMixinTest {
                                         )
                                 )
                         )
+                    ),
+                    Arguments.of(
+                        """
+                    {
+                        "data":{
+                          "_id":"d283cbc5-cc48-4bc4-8f00-ddba4e24fc91",
+                          "walletId":"a527e843-9d1c-4531-ae5b-3809cc7abe7a",
+                          "auditWallet":{
+                             "replacedByWalletId":"9d735400-9450-4f7e-9431-8c1e7fa2a339",
+                          },
+                          "timestamp":"2024-10-16T15:03:36.527818530Z",
+                          "_class":"it.pagopa.wallet.audit.WalletOnboardReplacedEvent"
+                       },
+                       "tracingInfo":{
+                          
+                       }
+                    }
+
+                """,
+                        CdcQueueEvent(
+                            tracingInfo = TracingInfo(),
+                            data =
+                                WalletOnboardReplacedEvent(
+                                    id = "d283cbc5-cc48-4bc4-8f00-ddba4e24fc91",
+                                    timestamp = "2024-10-16T15:03:36.527818530Z",
+                                    walletId = "a527e843-9d1c-4531-ae5b-3809cc7abe7a",
+                                    auditWallet =
+                                        AuditWalletReplaced(
+                                            replacedByWalletId =
+                                                "9d735400-9450-4f7e-9431-8c1e7fa2a339",
+                                        )
+                                )
+                        )
                     )
                 )
             )
