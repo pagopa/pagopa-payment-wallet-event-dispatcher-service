@@ -20,7 +20,7 @@
     </springProfile>
     <springProfile name="k8s">
         <root level="INFO">
-            <appender-ref ref="ECS_JSON_CONSOLE"/>
+            <appender-ref ref="OTEL_JSON_CONSOLE"/>
         </root>
     </springProfile>
 </configuration>
